@@ -1,0 +1,114 @@
+{
+  "@@locale": "en",
+  "appName": "RepLog",
+  "appSlogan": "Make every set count.",
+
+  "tabTrain": "Train",
+  "tabHistory": "History",
+  "tabInsights": "Insights",
+  "tabManage": "Manage",
+
+  "startWorkout": "Start Workout",
+  "continueWorkout": "Continue Workout",
+  "endWorkout": "End Workout",
+  "endWorkoutConfirm": "Are you sure you want to end this workout?",
+  "endWorkoutConfirmEmpty": "No sets were logged. Discard this session?",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "discard": "Discard",
+  "save": "Save",
+  "delete": "Delete",
+  "undo": "Undo",
+
+  "muscleChest": "Chest",
+  "muscleBack": "Back",
+  "muscleShoulders": "Shoulders",
+  "muscleLegs": "Legs",
+  "muscleArms": "Arms",
+  "muscleCore": "Core",
+  "muscleFullBody": "Full Body",
+
+  "weight": "Weight",
+  "reps": "Reps",
+  "sets": "Sets",
+  "logSet": "Log Set",
+  "setLogged": "Set logged!",
+  "setDeleted": "Set deleted",
+  "kg": "kg",
+  "lb": "lb",
+
+  "restTimer": "Rest Timer",
+  "restTimerDone": "Rest time is up!",
+
+  "selectExercise": "Select Exercise",
+  "selectMuscleGroup": "Select Muscle Group",
+  "recentExercises": "Recent",
+  "allExercises": "All",
+  "noExercises": "No exercises found",
+
+  "workoutDuration": "Duration",
+  "workoutSets": "{count} sets",
+  "@workoutSets": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "workoutVolume": "Volume",
+  "workoutInProgress": "Workout in progress",
+  "elapsedTime": "Elapsed",
+  "noActiveWorkout": "No active workout",
+
+  "recentWorkouts": "Recent Workouts",
+  "noWorkoutsYet": "No workouts yet.\nStart your first workout!",
+
+  "splitThreeDay": "3-Day Split",
+  "splitFiveDay": "5-Day Split",
+  "splitCustom": "Custom",
+  "splitGuidance": "Training Plans",
+  "push": "Push",
+  "pull": "Pull",
+  "legs": "Legs",
+
+  "historyTitle": "History",
+  "workoutDetail": "Workout Detail",
+  "noHistoryYet": "No workout history yet.",
+  "workoutOn": "Workout on {date}",
+  "@workoutOn": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+
+  "insightsTitle": "Insights",
+  "totalTrainingDays": "Training Days",
+  "totalSets": "Total Sets",
+  "totalVolume": "Total Volume",
+  "currentStreak": "Weekly Streak",
+  "recentActivity": "Recent Activity",
+  "noInsightsYet": "Complete your first workout\nto see insights.",
+  "weekDays": "MTWTFSS",
+
+  "manageTitle": "Manage",
+  "language": "Language",
+  "languageZh": "简体中文",
+  "languageEn": "English",
+  "weightUnit": "Weight Unit",
+  "replayTutorial": "Replay Tutorial",
+  "templates": "Templates",
+  "about": "About",
+  "version": "Version {version}",
+  "@version": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+
+  "splashSubtitle": "Make every set count.",
+  "tutorialWelcome": "Welcome to RepLog",
+  "tutorialStep1": "Start a workout with one tap",
+  "tutorialStep2": "Log weight and reps quickly",
+  "tutorialStep3": "Track your progress over time",
+  "tutorialGetStarted": "Get Started",
+  "tutorialSkip": "Skip",
+  "tutorialNext": "Next"
+}
