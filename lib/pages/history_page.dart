@@ -45,8 +45,18 @@ class _HistoryPageState extends State<HistoryPage>
           ? const Center(child: CircularProgressIndicator())
           : _workouts.isEmpty
               ? Center(
-                  child: Text(l10n.noHistoryYet,
-                      style: const TextStyle(color: AppColors.textHint)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.history,
+                          size: 64,
+                          color: AppColors.textHint.withOpacity(0.35)),
+                      const SizedBox(height: 16),
+                      Text(l10n.noHistoryYet,
+                          style: const TextStyle(
+                              color: AppColors.textHint, fontSize: 15)),
+                    ],
+                  ),
                 )
               : RefreshIndicator(
                   onRefresh: _load,

@@ -51,11 +51,20 @@ class _InsightsPageState extends State<InsightsPage>
           ? const Center(child: CircularProgressIndicator())
           : _stats == null || _stats!.totalDays == 0
               ? Center(
-                  child: Text(
-                    l10n.noInsightsYet,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: AppColors.textHint, height: 1.6),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.bar_chart,
+                          size: 64,
+                          color: AppColors.textHint.withOpacity(0.35)),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.noInsightsYet,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            color: AppColors.textHint, height: 1.6),
+                      ),
+                    ],
                   ),
                 )
               : RefreshIndicator(

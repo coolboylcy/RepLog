@@ -41,8 +41,9 @@ class _ManagePageState extends State<ManagePage>
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('tutorial_done');
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('重启应用即可看到教程')),
+      SnackBar(content: Text(l10n.tutorialRestartHint)),
     );
   }
 
@@ -88,9 +89,8 @@ class _ManagePageState extends State<ManagePage>
             title: Text(l10n.templates),
             trailing: const Icon(Icons.chevron_right, color: AppColors.textHint),
             onTap: () {
-              // TODO: 跳转到模板管理页（Phase 2）
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('模板管理 - 即将推出')),
+                SnackBar(content: Text(l10n.templatesComingSoon)),
               );
             },
           ),

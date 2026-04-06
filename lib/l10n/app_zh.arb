@@ -34,6 +34,14 @@
   "logSet": "记录本组",
   "setLogged": "已记录！",
   "setDeleted": "已删除",
+  "lastSetHint": "上次：{weight}{unit} × {reps}",
+  "@lastSetHint": {
+    "placeholders": {
+      "weight": {"type": "String"},
+      "unit": {"type": "String"},
+      "reps": {"type": "int"}
+    }
+  },
   "kg": "公斤",
   "lb": "磅",
 
@@ -41,6 +49,7 @@
   "restTimerDone": "休息时间到！",
 
   "selectExercise": "选择动作",
+  "searchExercises": "搜索动作",
   "selectMuscleGroup": "选择肌群",
   "recentExercises": "最近使用",
   "allExercises": "全部",
@@ -84,7 +93,9 @@
   "languageEn": "English",
   "weightUnit": "重量单位",
   "replayTutorial": "重播教程",
+  "tutorialRestartHint": "重启应用即可看到教程",
   "templates": "训练模板",
+  "templatesComingSoon": "模板管理 — 即将推出",
   "about": "关于",
   "version": "版本 {version}",
 

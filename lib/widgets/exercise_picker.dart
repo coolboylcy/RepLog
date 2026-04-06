@@ -117,7 +117,7 @@ class _ExercisePickerSheetState extends State<ExercisePickerSheet>
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: '搜索 / Search',
+                  hintText: l10n.searchExercises,
                   prefixIcon: const Icon(Icons.search, size: 20),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),

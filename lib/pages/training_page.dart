@@ -144,15 +144,23 @@ class _TrainingPageState extends State<TrainingPage>
                               ),
                             ),
                           ] else ...[
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 40),
                             Center(
-                              child: Text(
-                                l10n.noWorkoutsYet,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: AppColors.textHint,
-                                  height: 1.6,
-                                ),
+                              child: Column(
+                                children: [
+                                  Icon(Icons.fitness_center,
+                                      size: 48,
+                                      color: AppColors.textHint.withOpacity(0.4)),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    l10n.noWorkoutsYet,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: AppColors.textHint,
+                                      height: 1.6,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],

@@ -135,7 +135,7 @@ class _ExerciseGroup extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '${(set.weight * set.reps).toStringAsFixed(0)} vol',
+                      '${(set.weight * set.reps).toStringAsFixed(0)}$unit',
                       style: const TextStyle(
                         color: AppColors.textHint,
                         fontSize: 12,

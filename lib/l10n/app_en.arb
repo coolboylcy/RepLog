@@ -34,6 +34,14 @@
   "logSet": "Log Set",
   "setLogged": "Set logged!",
   "setDeleted": "Set deleted",
+  "lastSetHint": "Last: {weight}{unit} × {reps}",
+  "@lastSetHint": {
+    "placeholders": {
+      "weight": {"type": "String"},
+      "unit": {"type": "String"},
+      "reps": {"type": "int"}
+    }
+  },
   "kg": "kg",
   "lb": "lb",
 
@@ -41,6 +49,7 @@
   "restTimerDone": "Rest time is up!",
 
   "selectExercise": "Select Exercise",
+  "searchExercises": "Search exercises",
   "selectMuscleGroup": "Select Muscle Group",
   "recentExercises": "Recent",
   "allExercises": "All",
@@ -94,7 +103,9 @@
   "languageEn": "English",
   "weightUnit": "Weight Unit",
   "replayTutorial": "Replay Tutorial",
+  "tutorialRestartHint": "Restart the app to see the tutorial",
   "templates": "Templates",
+  "templatesComingSoon": "Templates — coming soon",
   "about": "About",
   "version": "Version {version}",
   "@version": {

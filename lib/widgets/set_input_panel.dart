@@ -82,7 +82,13 @@ class SetInputPanelState extends State<SetInputPanel> {
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
-                '上次: ${widget.lastSet!.weight % 1 == 0 ? widget.lastSet!.weight.toInt() : widget.lastSet!.weight}$unit × ${widget.lastSet!.reps}',
+                l10n.lastSetHint(
+                  widget.lastSet!.weight % 1 == 0
+                      ? widget.lastSet!.weight.toInt().toString()
+                      : widget.lastSet!.weight.toStringAsFixed(1),
+                  unit,
+                  widget.lastSet!.reps,
+                ),
                 style: const TextStyle(
                   color: AppColors.textHint,
                   fontSize: 13,

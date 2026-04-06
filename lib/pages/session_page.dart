@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../app/service_locator.dart';
 import '../models/workout.dart';
 import '../models/workout_set.dart';
@@ -36,7 +37,7 @@ class _SessionPageState extends State<SessionPage>
   final _restTimerKey = GlobalKey<RestTimerWidgetState>();
   final _inputPanelKey = GlobalKey<SetInputPanelState>();
 
-  bool _isKg = true; // TODO: 从 SharedPreferences 读取
+  bool _isKg = true;
 
   @override
   void initState() {
@@ -45,6 +46,14 @@ class _SessionPageState extends State<SessionPage>
     _workout = widget.workout;
     _startElapsedTimer();
     _loadSets();
+    _loadWeightUnit();
+  }
+
+  Future<void> _loadWeightUnit() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() => _isKg = prefs.getString('weight_unit') != 'lb');
+    }
   }
 
   void _startElapsedTimer() {
@@ -72,6 +81,7 @@ class _SessionPageState extends State<SessionPage>
   }
 
   Future<void> _selectMuscleGroup(String group) async {
+    HapticFeedback.selectionClick();
     setState(() {
       _selectedMuscleGroup = group;
       _selectedExercise = null;
@@ -192,6 +202,7 @@ class _SessionPageState extends State<SessionPage>
 
     if (confirmed != true) return;
 
+    HapticFeedback.heavyImpact();
     final svc = ServiceLocator.of(context).workoutService;
     if (isEmpty) {
       await svc.discardWorkout(_workout.id!);

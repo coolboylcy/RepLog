@@ -81,7 +81,7 @@ class WorkoutCard extends StatelessWidget {
   }
 
   String _formatVolume(double vol) {
-    if (vol >= 1000) return '${(vol / 1000).toStringAsFixed(1)}t';
+    if (vol >= 1000) return '${(vol / 1000).toStringAsFixed(1)}k';
     return vol.toStringAsFixed(0);
   }
 }
