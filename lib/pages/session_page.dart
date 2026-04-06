@@ -51,9 +51,7 @@ class _SessionPageState extends State<SessionPage>
 
   Future<void> _loadWeightUnit() async {
     final prefs = await SharedPreferences.getInstance();
-    if (mounted) {
-      setState(() => _isKg = prefs.getString('weight_unit') != 'lb');
-    }
+    if (mounted) setState(() => _isKg = prefs.getString('weight_unit') != 'lb');
   }
 
   void _startElapsedTimer() {
