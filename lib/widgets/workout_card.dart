@@ -8,8 +8,9 @@ import 'muscle_group_chips.dart';
 class WorkoutCard extends StatelessWidget {
   final Workout workout;
   final VoidCallback? onTap;
+  final bool isKg;
 
-  const WorkoutCard({super.key, required this.workout, this.onTap});
+  const WorkoutCard({super.key, required this.workout, this.onTap, this.isKg = true});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +48,6 @@ class WorkoutCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              // 肌群标签
               if (workout.muscleGroupList.isNotEmpty)
                 Wrap(
                   spacing: 6,
@@ -64,7 +64,7 @@ class WorkoutCard extends StatelessWidget {
                   const SizedBox(width: 16),
                   _Stat(
                     icon: Icons.monitor_weight_outlined,
-                    label: '${_formatVolume(workout.totalVolume)} kg',
+                    label: '${_formatVolume(workout.totalVolume)} ${isKg ? 'kg' : 'lb'}',
                   ),
                 ],
               ),
@@ -81,7 +81,7 @@ class WorkoutCard extends StatelessWidget {
   }
 
   String _formatVolume(double vol) {
-    if (vol >= 1000) return '${(vol / 1000).toStringAsFixed(1)}k';
+    if (vol >= 1000) return '${(vol / 1000).toStringAsFixed(1)}t';
     return vol.toStringAsFixed(0);
   }
 }

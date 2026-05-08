@@ -4,7 +4,7 @@ import 'seed_data.dart';
 
 class DatabaseHelper {
   static const _dbName = 'replog.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
 
   Database? _db;
 
@@ -32,12 +32,12 @@ class DatabaseHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // 版本化迁移：只增加新列，不修改已有列
-    // if (oldVersion < 2) { await db.execute('ALTER TABLE ...'); }
+    if (oldVersion < 2) {
+      await _seedTemplateItems(db);
+    }
   }
 
   Future<void> _createTables(Database db) async {
-    // 动作目录表
     await db.execute('''
       CREATE TABLE exercises (
         id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,7 +52,6 @@ class DatabaseHelper {
     await db.execute(
         'CREATE INDEX idx_exercises_muscle ON exercises(muscle_group)');
 
-    // 训练会话表
     await db.execute('''
       CREATE TABLE workouts (
         id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,7 +67,6 @@ class DatabaseHelper {
     await db.execute(
         'CREATE INDEX idx_workouts_started ON workouts(started_at DESC)');
 
-    // 训练组表（核心写入表）
     await db.execute('''
       CREATE TABLE workout_sets (
         id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -88,7 +86,6 @@ class DatabaseHelper {
     await db.execute(
         'CREATE INDEX idx_sets_exercise ON workout_sets(exercise_id)');
 
-    // 训练模板表
     await db.execute('''
       CREATE TABLE templates (
         id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -102,7 +99,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // 模板内动作项
     await db.execute('''
       CREATE TABLE template_items (
         id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,7 +117,6 @@ class DatabaseHelper {
     final now = DateTime.now().toIso8601String();
     final batch = db.batch();
 
-    // 插入内置动作
     for (final e in kSeedExercises) {
       batch.insert('exercises', {
         ...e,
@@ -130,7 +125,6 @@ class DatabaseHelper {
       });
     }
 
-    // 插入内置模板
     for (final t in kSeedTemplates) {
       batch.insert('templates', {
         ...t,
@@ -138,6 +132,41 @@ class DatabaseHelper {
       });
     }
 
+    await batch.commit(noResult: true);
+    await _seedTemplateItems(db);
+  }
+
+  Future<void> _seedTemplateItems(Database db) async {
+    final existing = await db.rawQuery('SELECT COUNT(*) AS c FROM template_items');
+    if ((existing.first['c'] as int) > 0) return;
+
+    final exerciseRows = await db.query('exercises', columns: ['id', 'name_zh']);
+    final exerciseIds = {
+      for (final r in exerciseRows) r['name_zh'] as String: r['id'] as int
+    };
+
+    final templateRows = await db.query('templates', columns: ['id', 'name_zh']);
+    final templateIds = {
+      for (final r in templateRows) r['name_zh'] as String: r['id'] as int
+    };
+
+    final batch = db.batch();
+    for (final entry in kSeedTemplateItems.entries) {
+      final templateId = templateIds[entry.key];
+      if (templateId == null) continue;
+      for (int i = 0; i < entry.value.length; i++) {
+        final item = entry.value[i];
+        final exerciseId = exerciseIds[item['name'] as String];
+        if (exerciseId == null) continue;
+        batch.insert('template_items', {
+          'template_id': templateId,
+          'exercise_id': exerciseId,
+          'default_sets': item['sets'] as int,
+          'default_reps': item['reps'] as int,
+          'sort_order': i,
+        });
+      }
+    }
     await batch.commit(noResult: true);
   }
 

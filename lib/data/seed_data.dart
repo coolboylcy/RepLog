@@ -61,9 +61,68 @@ const List<Map<String, dynamic>> kSeedExercises = [
   {'name_zh': '波比跳', 'name_en': 'Burpee', 'muscle_group': 'full_body', 'sort_order': 3},
 ];
 
+/// 模板动作项：template name_zh → [{name, sets, reps}, ...]
+const Map<String, List<Map<String, dynamic>>> kSeedTemplateItems = {
+  '推 (胸/肩/三头)': [
+    {'name': '杠铃卧推', 'sets': 4, 'reps': 8},
+    {'name': '上斜杠铃卧推', 'sets': 3, 'reps': 10},
+    {'name': '哑铃推举', 'sets': 3, 'reps': 10},
+    {'name': '哑铃侧平举', 'sets': 4, 'reps': 12},
+    {'name': '绳索下压', 'sets': 3, 'reps': 12},
+  ],
+  '拉 (背/二头)': [
+    {'name': '引体向上', 'sets': 4, 'reps': 8},
+    {'name': '坐姿绳索划船', 'sets': 3, 'reps': 10},
+    {'name': '杠铃划船', 'sets': 3, 'reps': 10},
+    {'name': '杠铃弯举', 'sets': 3, 'reps': 10},
+    {'name': '锤式弯举', 'sets': 3, 'reps': 12},
+  ],
+  '腿 (腿/核心)': [
+    {'name': '杠铃深蹲', 'sets': 4, 'reps': 8},
+    {'name': '腿举', 'sets': 3, 'reps': 12},
+    {'name': '罗马尼亚硬拉', 'sets': 3, 'reps': 10},
+    {'name': '腿弯举', 'sets': 3, 'reps': 12},
+    {'name': '站姿提踵', 'sets': 4, 'reps': 15},
+  ],
+  '胸日': [
+    {'name': '杠铃卧推', 'sets': 4, 'reps': 8},
+    {'name': '哑铃卧推', 'sets': 3, 'reps': 10},
+    {'name': '上斜哑铃卧推', 'sets': 3, 'reps': 10},
+    {'name': '哑铃飞鸟', 'sets': 3, 'reps': 12},
+    {'name': '绳索夹胸', 'sets': 3, 'reps': 12},
+  ],
+  '背日': [
+    {'name': '硬拉', 'sets': 4, 'reps': 5},
+    {'name': '引体向上', 'sets': 4, 'reps': 8},
+    {'name': '高位下拉', 'sets': 3, 'reps': 10},
+    {'name': '杠铃划船', 'sets': 3, 'reps': 10},
+    {'name': '哑铃单臂划船', 'sets': 3, 'reps': 12},
+  ],
+  '肩日': [
+    {'name': '杠铃推举', 'sets': 4, 'reps': 8},
+    {'name': '哑铃推举', 'sets': 3, 'reps': 10},
+    {'name': '哑铃侧平举', 'sets': 4, 'reps': 12},
+    {'name': '哑铃前平举', 'sets': 3, 'reps': 12},
+    {'name': '俯身哑铃飞鸟', 'sets': 3, 'reps': 12},
+  ],
+  '腿日': [
+    {'name': '杠铃深蹲', 'sets': 4, 'reps': 8},
+    {'name': '腿举', 'sets': 4, 'reps': 12},
+    {'name': '腿屈伸', 'sets': 3, 'reps': 12},
+    {'name': '腿弯举', 'sets': 3, 'reps': 12},
+    {'name': '罗马尼亚硬拉', 'sets': 3, 'reps': 10},
+  ],
+  '臂日': [
+    {'name': '杠铃弯举', 'sets': 4, 'reps': 10},
+    {'name': '哑铃弯举', 'sets': 3, 'reps': 12},
+    {'name': '锤式弯举', 'sets': 3, 'reps': 12},
+    {'name': '双杠臂屈伸', 'sets': 3, 'reps': 10},
+    {'name': '绳索下压', 'sets': 3, 'reps': 12},
+  ],
+};
+
 /// 内置训练模板
 const List<Map<String, dynamic>> kSeedTemplates = [
-  // 三分化 Push
   {
     'name_zh': '推 (胸/肩/三头)',
     'name_en': 'Push (Chest/Shoulders/Triceps)',
@@ -72,7 +131,6 @@ const List<Map<String, dynamic>> kSeedTemplates = [
     'sort_order': 1,
     'is_builtin': 1,
   },
-  // 三分化 Pull
   {
     'name_zh': '拉 (背/二头)',
     'name_en': 'Pull (Back/Biceps)',
@@ -81,7 +139,6 @@ const List<Map<String, dynamic>> kSeedTemplates = [
     'sort_order': 2,
     'is_builtin': 1,
   },
-  // 三分化 Legs
   {
     'name_zh': '腿 (腿/核心)',
     'name_en': 'Legs (Legs/Core)',
@@ -90,7 +147,6 @@ const List<Map<String, dynamic>> kSeedTemplates = [
     'sort_order': 3,
     'is_builtin': 1,
   },
-  // 五分化
   {
     'name_zh': '胸日',
     'name_en': 'Chest Day',

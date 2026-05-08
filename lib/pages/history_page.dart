@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../app/service_locator.dart';
 import '../models/workout.dart';
 import '../theme/app_colors.dart';
@@ -17,6 +18,7 @@ class _HistoryPageState extends State<HistoryPage>
     with AutomaticKeepAliveClientMixin {
   List<Workout> _workouts = [];
   bool _loading = true;
+  bool _isKg = true;
 
   @override
   bool get wantKeepAlive => true;
@@ -30,8 +32,15 @@ class _HistoryPageState extends State<HistoryPage>
   Future<void> _load() async {
     setState(() => _loading = true);
     final svc = ServiceLocator.of(context).workoutService;
+    final prefs = await SharedPreferences.getInstance();
     final all = await svc.getAllWorkouts();
-    if (mounted) setState(() { _workouts = all; _loading = false; });
+    if (mounted) {
+      setState(() {
+        _workouts = all;
+        _isKg = prefs.getString('weight_unit') != 'lb';
+        _loading = false;
+      });
+    }
   }
 
   @override
@@ -45,18 +54,8 @@ class _HistoryPageState extends State<HistoryPage>
           ? const Center(child: CircularProgressIndicator())
           : _workouts.isEmpty
               ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.history,
-                          size: 64,
-                          color: AppColors.textHint.withOpacity(0.35)),
-                      const SizedBox(height: 16),
-                      Text(l10n.noHistoryYet,
-                          style: const TextStyle(
-                              color: AppColors.textHint, fontSize: 15)),
-                    ],
-                  ),
+                  child: Text(l10n.noHistoryYet,
+                      style: const TextStyle(color: AppColors.textHint)),
                 )
               : RefreshIndicator(
                   onRefresh: _load,
@@ -68,6 +67,7 @@ class _HistoryPageState extends State<HistoryPage>
                       final w = _workouts[i];
                       return WorkoutCard(
                         workout: w,
+                        isKg: _isKg,
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
