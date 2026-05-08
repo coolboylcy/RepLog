@@ -2,12 +2,10 @@
   "@@locale": "en",
   "appName": "RepLog",
   "appSlogan": "Make every set count.",
-
   "tabTrain": "Train",
   "tabHistory": "History",
   "tabInsights": "Insights",
   "tabManage": "Manage",
-
   "startWorkout": "Start Workout",
   "continueWorkout": "Continue Workout",
   "endWorkout": "End Workout",
@@ -19,7 +17,6 @@
   "save": "Save",
   "delete": "Delete",
   "undo": "Undo",
-
   "muscleChest": "Chest",
   "muscleBack": "Back",
   "muscleShoulders": "Shoulders",
@@ -27,34 +24,21 @@
   "muscleArms": "Arms",
   "muscleCore": "Core",
   "muscleFullBody": "Full Body",
-
   "weight": "Weight",
   "reps": "Reps",
-  "sets": "Sets",
+  "sets": "sets",
   "logSet": "Log Set",
   "setLogged": "Set logged!",
   "setDeleted": "Set deleted",
-  "lastSetHint": "Last: {weight}{unit} × {reps}",
-  "@lastSetHint": {
-    "placeholders": {
-      "weight": {"type": "String"},
-      "unit": {"type": "String"},
-      "reps": {"type": "int"}
-    }
-  },
   "kg": "kg",
   "lb": "lb",
-
   "restTimer": "Rest Timer",
   "restTimerDone": "Rest time is up!",
-
   "selectExercise": "Select Exercise",
-  "searchExercises": "Search exercises",
   "selectMuscleGroup": "Select Muscle Group",
   "recentExercises": "Recent",
   "allExercises": "All",
   "noExercises": "No exercises found",
-
   "workoutDuration": "Duration",
   "workoutSets": "{count} sets",
   "@workoutSets": {
@@ -66,10 +50,8 @@
   "workoutInProgress": "Workout in progress",
   "elapsedTime": "Elapsed",
   "noActiveWorkout": "No active workout",
-
   "recentWorkouts": "Recent Workouts",
   "noWorkoutsYet": "No workouts yet.\nStart your first workout!",
-
   "splitThreeDay": "3-Day Split",
   "splitFiveDay": "5-Day Split",
   "splitCustom": "Custom",
@@ -77,7 +59,6 @@
   "push": "Push",
   "pull": "Pull",
   "legs": "Legs",
-
   "historyTitle": "History",
   "workoutDetail": "Workout Detail",
   "noHistoryYet": "No workout history yet.",
@@ -87,7 +68,6 @@
       "date": {"type": "String"}
     }
   },
-
   "insightsTitle": "Insights",
   "totalTrainingDays": "Training Days",
   "totalSets": "Total Sets",
@@ -96,16 +76,13 @@
   "recentActivity": "Recent Activity",
   "noInsightsYet": "Complete your first workout\nto see insights.",
   "weekDays": "MTWTFSS",
-
   "manageTitle": "Manage",
   "language": "Language",
   "languageZh": "简体中文",
   "languageEn": "English",
   "weightUnit": "Weight Unit",
   "replayTutorial": "Replay Tutorial",
-  "tutorialRestartHint": "Restart the app to see the tutorial",
   "templates": "Templates",
-  "templatesComingSoon": "Templates — coming soon",
   "about": "About",
   "version": "Version {version}",
   "@version": {
@@ -113,7 +90,6 @@
       "version": {"type": "String"}
     }
   },
-
   "splashSubtitle": "Make every set count.",
   "tutorialWelcome": "Welcome to RepLog",
   "tutorialStep1": "Start a workout with one tap",
@@ -121,5 +97,39 @@
   "tutorialStep3": "Track your progress over time",
   "tutorialGetStarted": "Get Started",
   "tutorialSkip": "Skip",
-  "tutorialNext": "Next"
+  "tutorialNext": "Next",
+  "selectTemplate": "Select Training Template",
+  "blankWorkout": "Blank Workout (No Template)",
+  "templateExerciseCount": "{count} exercises",
+  "@templateExerciseCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "useThisTemplate": "Train with This Template",
+  "templateDetail": "Template Details",
+  "defaultSetsReps": "{sets} sets × {reps} reps",
+  "@defaultSetsReps": {
+    "placeholders": {
+      "sets": {"type": "int"},
+      "reps": {"type": "int"}
+    }
+  },
+  "addExercise": "New Exercise",
+  "myExercises": "My Exercises",
+  "exerciseNameZh": "Exercise Name (Chinese)",
+  "exerciseNameEn": "English Name (optional)",
+  "noCustomExercises": "No custom exercises yet",
+  "exerciseAdded": "Exercise added",
+  "exerciseDeleted": "Exercise deleted",
+  "exerciseHistory": "Exercise History",
+  "personalRecord": "Personal Record (PR)",
+  "maxWeight": "Max Weight",
+  "maxVolumeSingle": "Max Volume (per set)",
+  "newRecord": "New Record!",
+  "noHistory": "No history for this exercise",
+  "muscleDistribution": "Muscle Distribution (last 30 days)",
+  "thisWeek": "This Week",
+  "lastWeek": "Last Week",
+  "weekComparison": "This Week vs Last"
 }

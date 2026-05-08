@@ -2,12 +2,10 @@
   "@@locale": "zh",
   "appName": "RepLog",
   "appSlogan": "每组都算数",
-
   "tabTrain": "训练",
   "tabHistory": "记录",
   "tabInsights": "洞察",
   "tabManage": "管理",
-
   "startWorkout": "开始训练",
   "continueWorkout": "继续训练",
   "endWorkout": "结束训练",
@@ -19,7 +17,6 @@
   "save": "保存",
   "delete": "删除",
   "undo": "撤销",
-
   "muscleChest": "胸",
   "muscleBack": "背",
   "muscleShoulders": "肩",
@@ -27,44 +24,29 @@
   "muscleArms": "臂",
   "muscleCore": "核心",
   "muscleFullBody": "全身",
-
   "weight": "重量",
   "reps": "次数",
-  "sets": "组数",
+  "sets": "组",
   "logSet": "记录本组",
   "setLogged": "已记录！",
   "setDeleted": "已删除",
-  "lastSetHint": "上次：{weight}{unit} × {reps}",
-  "@lastSetHint": {
-    "placeholders": {
-      "weight": {"type": "String"},
-      "unit": {"type": "String"},
-      "reps": {"type": "int"}
-    }
-  },
   "kg": "公斤",
   "lb": "磅",
-
   "restTimer": "休息计时",
   "restTimerDone": "休息时间到！",
-
   "selectExercise": "选择动作",
-  "searchExercises": "搜索动作",
   "selectMuscleGroup": "选择肌群",
   "recentExercises": "最近使用",
   "allExercises": "全部",
   "noExercises": "未找到动作",
-
   "workoutDuration": "时长",
   "workoutSets": "{count} 组",
   "workoutVolume": "容量",
   "workoutInProgress": "训练进行中",
   "elapsedTime": "已用时",
   "noActiveWorkout": "没有进行中的训练",
-
   "recentWorkouts": "最近训练",
   "noWorkoutsYet": "还没有训练记录\n开始你的第一次训练吧！",
-
   "splitThreeDay": "三分化",
   "splitFiveDay": "五分化",
   "splitCustom": "自定义",
@@ -72,12 +54,10 @@
   "push": "推",
   "pull": "拉",
   "legs": "腿",
-
   "historyTitle": "历史记录",
   "workoutDetail": "训练详情",
   "noHistoryYet": "还没有训练记录",
   "workoutOn": "{date} 的训练",
-
   "insightsTitle": "训练洞察",
   "totalTrainingDays": "训练天数",
   "totalSets": "总组数",
@@ -86,19 +66,15 @@
   "recentActivity": "近期活动",
   "noInsightsYet": "完成你的第一次训练\n即可查看数据洞察",
   "weekDays": "一二三四五六日",
-
   "manageTitle": "管理",
   "language": "语言",
   "languageZh": "简体中文",
   "languageEn": "English",
   "weightUnit": "重量单位",
   "replayTutorial": "重播教程",
-  "tutorialRestartHint": "重启应用即可看到教程",
   "templates": "训练模板",
-  "templatesComingSoon": "模板管理 — 即将推出",
   "about": "关于",
   "version": "版本 {version}",
-
   "splashSubtitle": "每组都算数",
   "tutorialWelcome": "欢迎使用 RepLog",
   "tutorialStep1": "一键开始训练",
@@ -106,5 +82,39 @@
   "tutorialStep3": "追踪你的进步",
   "tutorialGetStarted": "开始使用",
   "tutorialSkip": "跳过",
-  "tutorialNext": "下一步"
+  "tutorialNext": "下一步",
+  "selectTemplate": "选择训练模板",
+  "blankWorkout": "空白训练（不使用模板）",
+  "templateExerciseCount": "{count} 个动作",
+  "@templateExerciseCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "useThisTemplate": "用此模板开始训练",
+  "templateDetail": "模板详情",
+  "defaultSetsReps": "{sets} 组 × {reps} 次",
+  "@defaultSetsReps": {
+    "placeholders": {
+      "sets": {"type": "int"},
+      "reps": {"type": "int"}
+    }
+  },
+  "addExercise": "新建动作",
+  "myExercises": "我的动作",
+  "exerciseNameZh": "动作名称（中文）",
+  "exerciseNameEn": "英文名（可选）",
+  "noCustomExercises": "还没有自定义动作",
+  "exerciseAdded": "动作已添加",
+  "exerciseDeleted": "动作已删除",
+  "exerciseHistory": "动作历史",
+  "personalRecord": "个人记录（PR）",
+  "maxWeight": "最大重量",
+  "maxVolumeSingle": "最大容量（单组）",
+  "newRecord": "新纪录！",
+  "noHistory": "还没有该动作的记录",
+  "muscleDistribution": "肌群分布（近30天）",
+  "thisWeek": "本周",
+  "lastWeek": "上周",
+  "weekComparison": "本周 vs 上周"
 }
