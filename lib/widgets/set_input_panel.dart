@@ -4,10 +4,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../models/workout_set.dart';
 import '../theme/app_colors.dart';
 
-/// 核心输入面板：重量 + 次数 + 记录按钮
 class SetInputPanel extends StatefulWidget {
-  final WorkoutSet? lastSet; // 上次该动作的记录（用于默认值）
-  final bool isKg; // 单位
+  final WorkoutSet? lastSet;
+  final bool isKg;
   final VoidCallback onLogSet;
   final void Function(double weight, int reps) onValuesChanged;
 
@@ -32,6 +31,17 @@ class SetInputPanelState extends State<SetInputPanel> {
     super.initState();
     _weight = widget.lastSet?.weight ?? 20.0;
     _reps = widget.lastSet?.reps ?? 10;
+  }
+
+  @override
+  void didUpdateWidget(SetInputPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.lastSet != oldWidget.lastSet) {
+      setState(() {
+        _weight = widget.lastSet?.weight ?? 20.0;
+        _reps = widget.lastSet?.reps ?? 10;
+      });
+    }
   }
 
   void _setWeight(double value) {
@@ -77,28 +87,19 @@ class SetInputPanelState extends State<SetInputPanel> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 上次记录提示
           if (widget.lastSet != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
-                l10n.lastSetHint(
-                  widget.lastSet!.weight % 1 == 0
-                      ? widget.lastSet!.weight.toInt().toString()
-                      : widget.lastSet!.weight.toStringAsFixed(1),
-                  unit,
-                  widget.lastSet!.reps,
-                ),
+                '上次: ${widget.lastSet!.weight % 1 == 0 ? widget.lastSet!.weight.toInt() : widget.lastSet!.weight}$unit × ${widget.lastSet!.reps}',
                 style: const TextStyle(
                   color: AppColors.textHint,
                   fontSize: 13,
                 ),
               ),
             ),
-
           Row(
             children: [
-              // 重量
               Expanded(
                 child: _InputStepper(
                   label: '${l10n.weight} ($unit)',
@@ -111,7 +112,6 @@ class SetInputPanelState extends State<SetInputPanel> {
                 ),
               ),
               const SizedBox(width: 16),
-              // 次数
               Expanded(
                 child: _InputStepper(
                   label: l10n.reps,
@@ -123,10 +123,7 @@ class SetInputPanelState extends State<SetInputPanel> {
               ),
             ],
           ),
-
           const SizedBox(height: 12),
-
-          // 记录按钮
           SizedBox(
             width: double.infinity,
             height: 56,
@@ -268,7 +265,6 @@ class _InputStepper extends StatelessWidget {
             ],
           ),
         ),
-        // 小步进（重量用 ±1.25）
         if (smallDecrease != null && smallIncrease != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
