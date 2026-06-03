@@ -75,7 +75,7 @@ class _SplashPageState extends State<SplashPage>
                   width: 88,
                   height: 88,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
+                    color: Colors.white.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: const Icon(
@@ -98,7 +98,7 @@ class _SplashPageState extends State<SplashPage>
                 Text(
                   '每组都算数',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 16,
                     letterSpacing: 2,
                   ),
@@ -107,7 +107,7 @@ class _SplashPageState extends State<SplashPage>
                 Text(
                   'Make every set count.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.45),
+                    color: Colors.white.withValues(alpha: 0.45),
                     fontSize: 13,
                     letterSpacing: 0.5,
                   ),
@@ -197,8 +197,7 @@ class _TutorialPageState extends State<TutorialPage> {
               child: TextButton(
                 onPressed: _finish,
                 child: Text(l10n.tutorialSkip,
-                    style:
-                        const TextStyle(color: AppColors.textSecondary)),
+                    style: const TextStyle(color: AppColors.textSecondary)),
               ),
             ),
 
@@ -230,7 +229,7 @@ class _TutorialPageState extends State<TutorialPage> {
                   decoration: BoxDecoration(
                     color: _page == i
                         ? AppColors.primary
-                        : AppColors.primary.withOpacity(0.2),
+                        : AppColors.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -290,10 +289,14 @@ class _TutorialStepView extends StatelessWidget {
 
   String _getBody() {
     switch (pageIndex) {
-      case 0: return l10n.tutorialStep1;
-      case 1: return l10n.tutorialStep2;
-      case 2: return l10n.tutorialStep3;
-      default: return '';
+      case 0:
+        return l10n.tutorialStep1;
+      case 1:
+        return l10n.tutorialStep2;
+      case 2:
+        return l10n.tutorialStep3;
+      default:
+        return '';
     }
   }
 
@@ -308,7 +311,7 @@ class _TutorialStepView extends StatelessWidget {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: step.color.withOpacity(0.12),
+              color: step.color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(step.icon, size: 48, color: step.color),
@@ -316,17 +319,14 @@ class _TutorialStepView extends StatelessWidget {
           const SizedBox(height: 32),
           Text(
             _getTitle(),
-            style: const TextStyle(
-                fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
           Text(
             _getBody(),
             style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-                height: 1.5),
+                fontSize: 16, color: AppColors.textSecondary, height: 1.5),
             textAlign: TextAlign.center,
           ),
         ],

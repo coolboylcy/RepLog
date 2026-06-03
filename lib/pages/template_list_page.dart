@@ -38,7 +38,8 @@ class _TemplateListPageState extends State<TemplateListPage> {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
 
-    final threeDay = _templates.where((t) => t.splitType == 'three_day').toList();
+    final threeDay =
+        _templates.where((t) => t.splitType == 'three_day').toList();
     final fiveDay = _templates.where((t) => t.splitType == 'five_day').toList();
 
     return Scaffold(
@@ -48,7 +49,8 @@ class _TemplateListPageState extends State<TemplateListPage> {
           : ListView(
               children: [
                 if (threeDay.isNotEmpty) ...[
-                  _SectionHeader(label: l10n.splitThreeDay, color: AppColors.primary),
+                  _SectionHeader(
+                      label: l10n.splitThreeDay, color: AppColors.primary),
                   ...threeDay.map((t) => _TemplateTile(
                         template: t,
                         locale: locale,
@@ -61,7 +63,8 @@ class _TemplateListPageState extends State<TemplateListPage> {
                       )),
                 ],
                 if (fiveDay.isNotEmpty) ...[
-                  _SectionHeader(label: l10n.splitFiveDay, color: AppColors.accent),
+                  _SectionHeader(
+                      label: l10n.splitFiveDay, color: AppColors.accent),
                   ...fiveDay.map((t) => _TemplateTile(
                         template: t,
                         locale: locale,
@@ -116,14 +119,16 @@ class _TemplateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = template.splitType == 'three_day' ? AppColors.primary : AppColors.accent;
+    final color = template.splitType == 'three_day'
+        ? AppColors.primary
+        : AppColors.accent;
 
     return ListTile(
       leading: Container(
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
+          color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Center(

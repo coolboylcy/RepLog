@@ -32,10 +32,9 @@ class WeekActivityRow extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: trained
                     ? AppColors.primary
-                    : AppColors.primary.withOpacity(0.08),
+                    : AppColors.primary.withValues(alpha: 0.08),
                 border: isToday
-                    ? Border.all(
-                        color: AppColors.primary, width: 2)
+                    ? Border.all(color: AppColors.primary, width: 2)
                     : null,
               ),
               child: trained
@@ -47,11 +46,8 @@ class WeekActivityRow extends StatelessWidget {
               dayLabels[i],
               style: TextStyle(
                 fontSize: 10,
-                color:
-                    trained ? AppColors.primary : AppColors.textHint,
-                fontWeight: isToday
-                    ? FontWeight.bold
-                    : FontWeight.normal,
+                color: trained ? AppColors.primary : AppColors.textHint,
+                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],

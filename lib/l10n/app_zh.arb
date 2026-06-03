@@ -72,7 +72,9 @@
   "languageEn": "English",
   "weightUnit": "重量单位",
   "replayTutorial": "重播教程",
+  "tutorialRestartHint": "教程将在下次启动时重新播放",
   "templates": "训练模板",
+  "templatesComingSoon": "训练模板即将上线",
   "about": "关于",
   "version": "版本 {version}",
   "splashSubtitle": "每组都算数",
@@ -84,6 +86,7 @@
   "tutorialSkip": "跳过",
   "tutorialNext": "下一步",
   "selectTemplate": "选择训练模板",
+  "searchExercises": "搜索动作",
   "blankWorkout": "空白训练（不使用模板）",
   "templateExerciseCount": "{count} 个动作",
   "@templateExerciseCount": {

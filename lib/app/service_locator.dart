@@ -54,7 +54,7 @@ class ServiceLocator extends InheritedWidget {
     final statsRepo = StatsRepository(database);
 
     final workoutService = WorkoutService(workoutRepo, setRepo);
-    final exerciseService = ExerciseService(exerciseRepo, setRepo);
+    final exerciseService = ExerciseService(exerciseRepo);
     final statsService = StatsService(statsRepo);
     final localeService = LocaleService();
     await localeService.init();

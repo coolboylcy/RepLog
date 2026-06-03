@@ -35,6 +35,7 @@ class _MyExercisesPageState extends State<MyExercisesPage> {
 
   Future<void> _delete(Exercise exercise) async {
     final l10n = AppLocalizations.of(context)!;
+    final repo = ServiceLocator.of(context).exerciseRepository;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -47,15 +48,14 @@ class _MyExercisesPageState extends State<MyExercisesPage> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: Text(l10n.delete),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
-    await ServiceLocator.of(context).exerciseRepository.delete(exercise.id!);
+    await repo.delete(exercise.id!);
     if (mounted) {
       setState(() => _exercises.removeWhere((e) => e.id == exercise.id));
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,8 +100,7 @@ class _MyExercisesPageState extends State<MyExercisesPage> {
                           size: 48, color: AppColors.textHint),
                       const SizedBox(height: 12),
                       Text(l10n.noCustomExercises,
-                          style:
-                              const TextStyle(color: AppColors.textHint)),
+                          style: const TextStyle(color: AppColors.textHint)),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: _addExercise,
@@ -119,8 +118,7 @@ class _MyExercisesPageState extends State<MyExercisesPage> {
                     final e = _exercises[i];
                     return ListTile(
                       title: Text(e.localizedName(locale),
-                          style:
-                              const TextStyle(fontWeight: FontWeight.w500)),
+                          style: const TextStyle(fontWeight: FontWeight.w500)),
                       subtitle: Row(
                         children: [MuscleGroupTag(muscleGroup: e.muscleGroup)],
                       ),

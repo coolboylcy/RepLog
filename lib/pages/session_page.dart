@@ -23,8 +23,7 @@ class SessionPage extends StatefulWidget {
   State<SessionPage> createState() => _SessionPageState();
 }
 
-class _SessionPageState extends State<SessionPage>
-    with WidgetsBindingObserver {
+class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
   late Workout _workout;
   String? _selectedMuscleGroup;
   Exercise? _selectedExercise;
@@ -100,9 +99,11 @@ class _SessionPageState extends State<SessionPage>
       allExercises: all,
     );
     if (exercise == null) return;
+    if (!mounted) return;
 
     final workoutSvc = ServiceLocator.of(context).workoutService;
     final lastSets = await workoutSvc.getLastSetsForExercise(exercise.id!);
+    if (!mounted) return;
     setState(() {
       _selectedExercise = exercise;
       _lastSet = lastSets.isNotEmpty ? lastSets.first : null;
@@ -124,8 +125,8 @@ class _SessionPageState extends State<SessionPage>
     final saved = await svc.logSet(
       workoutId: _workout.id!,
       exerciseId: _selectedExercise!.id!,
-      exerciseName: _selectedExercise!.localizedName(
-          Localizations.localeOf(context).languageCode),
+      exerciseName: _selectedExercise!
+          .localizedName(Localizations.localeOf(context).languageCode),
       muscleGroup: _selectedMuscleGroup!,
       weight: panelState.weight,
       reps: panelState.reps,
@@ -199,6 +200,7 @@ class _SessionPageState extends State<SessionPage>
     );
 
     if (confirmed != true) return;
+    if (!mounted) return;
 
     HapticFeedback.heavyImpact();
     final svc = ServiceLocator.of(context).workoutService;
@@ -214,7 +216,8 @@ class _SessionPageState extends State<SessionPage>
   void _showSnack(String message) {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
-      ..showSnackBar(SnackBar(content: Text(message), duration: const Duration(seconds: 1)));
+      ..showSnackBar(SnackBar(
+          content: Text(message), duration: const Duration(seconds: 1)));
   }
 
   String get _elapsedLabel {
@@ -236,7 +239,7 @@ class _SessionPageState extends State<SessionPage>
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _endWorkout();
       },
       child: Scaffold(
@@ -273,7 +276,7 @@ class _SessionPageState extends State<SessionPage>
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: _selectedExercise != null
-                            ? AppColors.primary.withOpacity(0.3)
+                            ? AppColors.primary.withValues(alpha: 0.3)
                             : Colors.grey[200]!,
                       ),
                     ),
@@ -358,7 +361,8 @@ class _TopBar extends StatelessWidget {
       child: Row(
         children: [
           // 计时器
-          const Icon(Icons.timer_outlined, size: 16, color: AppColors.textSecondary),
+          const Icon(Icons.timer_outlined,
+              size: 16, color: AppColors.textSecondary),
           const SizedBox(width: 4),
           Text(
             elapsedLabel,
@@ -374,7 +378,7 @@ class _TopBar extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -391,7 +395,7 @@ class _TopBar extends StatelessWidget {
           TextButton(
             onPressed: onEnd,
             style: TextButton.styleFrom(
-              backgroundColor: AppColors.error.withOpacity(0.08),
+              backgroundColor: AppColors.error.withValues(alpha: 0.08),
               foregroundColor: AppColors.error,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               shape: RoundedRectangleBorder(

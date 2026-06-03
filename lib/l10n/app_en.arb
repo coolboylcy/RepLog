@@ -82,7 +82,9 @@
   "languageEn": "English",
   "weightUnit": "Weight Unit",
   "replayTutorial": "Replay Tutorial",
+  "tutorialRestartHint": "The tutorial will replay next time you launch the app.",
   "templates": "Templates",
+  "templatesComingSoon": "Templates are coming soon.",
   "about": "About",
   "version": "Version {version}",
   "@version": {
@@ -99,6 +101,7 @@
   "tutorialSkip": "Skip",
   "tutorialNext": "Next",
   "selectTemplate": "Select Training Template",
+  "searchExercises": "Search exercises",
   "blankWorkout": "Blank Workout (No Template)",
   "templateExerciseCount": "{count} exercises",
   "@templateExerciseCount": {

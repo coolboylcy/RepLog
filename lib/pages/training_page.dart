@@ -83,9 +83,9 @@ class _TrainingPageState extends State<TrainingPage>
                 child: CustomScrollView(
                   slivers: [
                     // ── App Bar ─────────────────────
-                    SliverAppBar(
+                    const SliverAppBar(
                       floating: true,
-                      title: const Text(
+                      title: Text(
                         'RepLog',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -119,14 +119,13 @@ class _TrainingPageState extends State<TrainingPage>
 
                           // ── 分化训练指引 ────────────
                           const SizedBox(height: 24),
-                          _SplitGuidanceSection(),
+                          const _SplitGuidanceSection(),
 
                           // ── 最近训练 ────────────────
                           if (_recentWorkouts.isNotEmpty) ...[
                             const SizedBox(height: 24),
                             Text(l10n.recentWorkouts,
-                                style:
-                                    Theme.of(context).textTheme.titleMedium),
+                                style: Theme.of(context).textTheme.titleMedium),
                             const SizedBox(height: 12),
                             ..._recentWorkouts.map(
                               (w) => Padding(
@@ -150,7 +149,8 @@ class _TrainingPageState extends State<TrainingPage>
                                 children: [
                                   Icon(Icons.fitness_center,
                                       size: 48,
-                                      color: AppColors.textHint.withOpacity(0.4)),
+                                      color: AppColors.textHint
+                                          .withValues(alpha: 0.4)),
                                   const SizedBox(height: 12),
                                   Text(
                                     l10n.noWorkoutsYet,
@@ -179,8 +179,7 @@ class _ActiveWorkoutBanner extends StatelessWidget {
   final Workout workout;
   final VoidCallback onContinue;
 
-  const _ActiveWorkoutBanner(
-      {required this.workout, required this.onContinue});
+  const _ActiveWorkoutBanner({required this.workout, required this.onContinue});
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +192,7 @@ class _ActiveWorkoutBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [AppColors.primary, AppColors.primaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -215,7 +214,8 @@ class _ActiveWorkoutBanner extends StatelessWidget {
                         fontSize: 14)),
                 Text('$elapsedStr · ${l10n.workoutSets(workout.totalSets)}',
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.8), fontSize: 12)),
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 12)),
               ],
             ),
           ),
@@ -243,8 +243,7 @@ class _StartWorkoutButton extends StatelessWidget {
   final bool hasActive;
   final VoidCallback onStart;
 
-  const _StartWorkoutButton(
-      {required this.hasActive, required this.onStart});
+  const _StartWorkoutButton({required this.hasActive, required this.onStart});
 
   @override
   Widget build(BuildContext context) {
@@ -254,17 +253,15 @@ class _StartWorkoutButton extends StatelessWidget {
       height: 60,
       child: ElevatedButton.icon(
         onPressed: onStart,
-        icon: Icon(hasActive ? Icons.play_arrow : Icons.add,
-            size: 22),
+        icon: Icon(hasActive ? Icons.play_arrow : Icons.add, size: 22),
         label: Text(
           hasActive ? l10n.continueWorkout : l10n.startWorkout,
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              hasActive ? AppColors.accent : AppColors.primary,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
+          backgroundColor: hasActive ? AppColors.accent : AppColors.primary,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
     );
@@ -343,9 +340,9 @@ class _SplitCard extends StatelessWidget {
       width: 200,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: data.color.withOpacity(0.07),
+        color: data.color.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: data.color.withOpacity(0.2)),
+        border: Border.all(color: data.color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,7 +369,7 @@ class _SplitCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: data.color.withOpacity(0.12),
+                        color: data.color.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(d,

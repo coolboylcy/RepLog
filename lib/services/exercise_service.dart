@@ -1,12 +1,10 @@
 import '../models/exercise.dart';
 import '../repositories/exercise_repository.dart';
-import '../repositories/set_repository.dart';
 
 class ExerciseService {
   final ExerciseRepository _exerciseRepo;
-  final SetRepository _setRepo;
 
-  ExerciseService(this._exerciseRepo, this._setRepo);
+  ExerciseService(this._exerciseRepo);
 
   Future<List<Exercise>> getByMuscleGroup(String muscleGroup) =>
       _exerciseRepo.getByMuscleGroup(muscleGroup);

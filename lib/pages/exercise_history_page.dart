@@ -54,7 +54,9 @@ class _ExerciseHistoryPageState extends State<ExerciseHistoryPage> {
   List<double> get _maxWeightPerSession {
     return _grouped.values
         .map((sets) => sets.fold<double>(
-            0, (max, s) => (s['weight'] as double) > max ? s['weight'] as double : max))
+            0,
+            (max, s) =>
+                (s['weight'] as double) > max ? s['weight'] as double : max))
         .toList()
         .reversed
         .take(10)
@@ -92,8 +94,8 @@ class _ExerciseHistoryPageState extends State<ExerciseHistoryPage> {
                         SizedBox(
                           height: 100,
                           child: CustomPaint(
-                            painter: _LineChartPainter(
-                                values: _maxWeightPerSession),
+                            painter:
+                                _LineChartPainter(values: _maxWeightPerSession),
                             child: const SizedBox.expand(),
                           ),
                         ),
@@ -105,7 +107,9 @@ class _ExerciseHistoryPageState extends State<ExerciseHistoryPage> {
                       ...grouped.entries.map((entry) {
                         final date = DateTime.parse(entry.key);
                         final dateStr = DateFormat(
-                          locale.startsWith('zh') ? 'yyyy年MM月dd日' : 'MMMM d, yyyy',
+                          locale.startsWith('zh')
+                              ? 'yyyy年MM月dd日'
+                              : 'MMMM d, yyyy',
                           locale.startsWith('zh') ? 'zh_CN' : 'en_US',
                         ).format(date);
                         return Column(
@@ -135,7 +139,8 @@ class _ExerciseHistoryPageState extends State<ExerciseHistoryPage> {
                                       height: 24,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
-                                        color: AppColors.primary.withOpacity(0.1),
+                                        color: AppColors.primary
+                                            .withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
@@ -174,13 +179,15 @@ class _PrCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxW = pr['max_weight']!;
     final maxV = pr['max_volume']!;
-    final maxWStr = maxW % 1 == 0 ? maxW.toInt().toString() : maxW.toStringAsFixed(1);
-    final maxVStr = maxV % 1 == 0 ? maxV.toInt().toString() : maxV.toStringAsFixed(1);
+    final maxWStr =
+        maxW % 1 == 0 ? maxW.toInt().toString() : maxW.toStringAsFixed(1);
+    final maxVStr =
+        maxV % 1 == 0 ? maxV.toInt().toString() : maxV.toStringAsFixed(1);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [AppColors.primary, AppColors.primaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -204,7 +211,7 @@ class _PrCard extends StatelessWidget {
                 Text(
                   '${l10n.maxWeight}: $maxWStr kg  |  ${l10n.maxVolumeSingle}: $maxVStr kg',
                   style: TextStyle(
-                      color: Colors.white.withOpacity(0.9), fontSize: 12),
+                      color: Colors.white.withValues(alpha: 0.9), fontSize: 12),
                 ),
               ],
             ),
@@ -239,8 +246,13 @@ class _LineChartPainter extends CustomPainter {
     final stepX = size.width / (values.length - 1);
     for (int i = 0; i < values.length; i++) {
       final x = i * stepX;
-      final y = size.height - ((values[i] - minVal) / range) * (size.height - 16) - 8;
-      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+      final y =
+          size.height - ((values[i] - minVal) / range) * (size.height - 16) - 8;
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
       canvas.drawCircle(Offset(x, y), 4, dotPaint);
     }
     canvas.drawPath(path, paint);

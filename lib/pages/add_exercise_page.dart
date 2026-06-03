@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../app/service_locator.dart';
-import '../models/exercise.dart';
 import '../theme/app_colors.dart';
 
 class AddExercisePage extends StatefulWidget {
@@ -19,7 +18,13 @@ class _AddExercisePageState extends State<AddExercisePage> {
   bool _saving = false;
 
   static const _muscleGroups = [
-    'chest', 'back', 'shoulders', 'legs', 'arms', 'core', 'full_body'
+    'chest',
+    'back',
+    'shoulders',
+    'legs',
+    'arms',
+    'core',
+    'full_body'
   ];
 
   @override
@@ -33,7 +38,8 @@ class _AddExercisePageState extends State<AddExercisePage> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedMuscleGroup == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.selectMuscleGroup)),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!.selectMuscleGroup)),
       );
       return;
     }
@@ -77,8 +83,8 @@ class _AddExercisePageState extends State<AddExercisePage> {
               controller: _nameZhController,
               decoration: InputDecoration(
                 labelText: l10n.exerciseNameZh,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 filled: true,
                 fillColor: AppColors.surface,
               ),
@@ -91,8 +97,8 @@ class _AddExercisePageState extends State<AddExercisePage> {
               controller: _nameEnController,
               decoration: InputDecoration(
                 labelText: l10n.exerciseNameEn,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 filled: true,
                 fillColor: AppColors.surface,
               ),
@@ -114,12 +120,13 @@ class _AddExercisePageState extends State<AddExercisePage> {
                 return ChoiceChip(
                   label: Text(_muscleLabel(group, locale)),
                   selected: selected,
-                  selectedColor: color.withOpacity(0.2),
+                  selectedColor: color.withValues(alpha: 0.2),
                   labelStyle: TextStyle(
                     color: selected ? color : AppColors.textPrimary,
                     fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                   ),
-                  onSelected: (_) => setState(() => _selectedMuscleGroup = group),
+                  onSelected: (_) =>
+                      setState(() => _selectedMuscleGroup = group),
                 );
               }).toList(),
             ),
@@ -132,14 +139,22 @@ class _AddExercisePageState extends State<AddExercisePage> {
   String _muscleLabel(String group, String locale) {
     final l10n = AppLocalizations.of(context)!;
     switch (group) {
-      case 'chest': return l10n.muscleChest;
-      case 'back': return l10n.muscleBack;
-      case 'shoulders': return l10n.muscleShoulders;
-      case 'legs': return l10n.muscleLegs;
-      case 'arms': return l10n.muscleArms;
-      case 'core': return l10n.muscleCore;
-      case 'full_body': return l10n.muscleFullBody;
-      default: return group;
+      case 'chest':
+        return l10n.muscleChest;
+      case 'back':
+        return l10n.muscleBack;
+      case 'shoulders':
+        return l10n.muscleShoulders;
+      case 'legs':
+        return l10n.muscleLegs;
+      case 'arms':
+        return l10n.muscleArms;
+      case 'core':
+        return l10n.muscleCore;
+      case 'full_body':
+        return l10n.muscleFullBody;
+      default:
+        return group;
     }
   }
 }

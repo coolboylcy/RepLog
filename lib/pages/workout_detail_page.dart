@@ -88,8 +88,7 @@ class _WorkoutDetailPageState extends State<WorkoutDetailPage> {
                   if (_sets.isEmpty)
                     Center(
                       child: Text(l10n.noHistoryYet,
-                          style:
-                              const TextStyle(color: AppColors.textHint)),
+                          style: const TextStyle(color: AppColors.textHint)),
                     )
                   else
                     ...grouped.entries.map(
@@ -125,8 +124,7 @@ class _SummaryRow extends StatelessWidget {
         ),
         const SizedBox(width: 20),
         _SumItem(
-          label:
-              '${workout.totalVolume.toStringAsFixed(0)} kg',
+          label: '${workout.totalVolume.toStringAsFixed(0)} kg',
           icon: Icons.monitor_weight_outlined,
         ),
         if (durationMin != null) ...[
@@ -170,8 +168,7 @@ class _ExerciseBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalVol =
-        sets.fold<double>(0, (sum, s) => sum + s.weight * s.reps);
+    final totalVol = sets.fold<double>(0, (sum, s) => sum + s.weight * s.reps);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -208,7 +205,7 @@ class _ExerciseBlock extends StatelessWidget {
                     height: 24,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(

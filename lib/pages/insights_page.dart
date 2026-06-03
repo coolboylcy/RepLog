@@ -31,7 +31,12 @@ class _InsightsPageState extends State<InsightsPage>
     setState(() => _loading = true);
     final svc = ServiceLocator.of(context).statsService;
     final stats = await svc.getStats();
-    if (mounted) setState(() { _stats = stats; _loading = false; });
+    if (mounted) {
+      setState(() {
+        _stats = stats;
+        _loading = false;
+      });
+    }
   }
 
   String _formatVolume(double vol) {
@@ -56,7 +61,7 @@ class _InsightsPageState extends State<InsightsPage>
                     children: [
                       Icon(Icons.bar_chart,
                           size: 64,
-                          color: AppColors.textHint.withOpacity(0.35)),
+                          color: AppColors.textHint.withValues(alpha: 0.35)),
                       const SizedBox(height: 16),
                       Text(
                         l10n.noInsightsYet,
@@ -123,8 +128,8 @@ class _InsightsPageState extends State<InsightsPage>
                             color: AppColors.surface,
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: WeekActivityRow(
-                              activity: _stats!.weekActivity),
+                          child:
+                              WeekActivityRow(activity: _stats!.weekActivity),
                         ),
                       ],
                     ),

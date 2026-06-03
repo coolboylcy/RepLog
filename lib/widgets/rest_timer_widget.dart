@@ -59,7 +59,9 @@ class RestTimerWidgetState extends State<RestTimerWidget>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isRunning && _startedAt != null) {
+    if (state == AppLifecycleState.resumed &&
+        _isRunning &&
+        _startedAt != null) {
       // 重新计算剩余时间（防止后台暂停计时器）
       final elapsed = DateTime.now().difference(_startedAt!).inSeconds;
       final remaining = (_totalSeconds - elapsed).clamp(0, _totalSeconds);
@@ -99,17 +101,16 @@ class RestTimerWidgetState extends State<RestTimerWidget>
 
     if (!_isRunning && !_isDone) return const SizedBox.shrink();
 
-    final progress = _totalSeconds > 0
-        ? _remainingSeconds / _totalSeconds
-        : 0.0;
+    final progress =
+        _totalSeconds > 0 ? _remainingSeconds / _totalSeconds : 0.0;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
         color: _isDone
-            ? AppColors.success.withOpacity(0.12)
-            : AppColors.primary.withOpacity(0.07),
+            ? AppColors.success.withValues(alpha: 0.12)
+            : AppColors.primary.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: _isDone ? AppColors.success : AppColors.primary,
@@ -161,9 +162,7 @@ class RestTimerWidgetState extends State<RestTimerWidget>
                 if (!_isDone)
                   Row(
                     children: _presets.map((sec) {
-                      final label = sec >= 60
-                          ? '${sec ~/ 60}min'
-                          : '${sec}s';
+                      final label = sec >= 60 ? '${sec ~/ 60}min' : '${sec}s';
                       return Padding(
                         padding: const EdgeInsets.only(right: 6, top: 4),
                         child: InkWell(
@@ -172,7 +171,7 @@ class RestTimerWidgetState extends State<RestTimerWidget>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(

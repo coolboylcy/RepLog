@@ -77,17 +77,20 @@ class _ManagePageState extends State<ManagePage>
           ),
 
           // ── 其他 ──────────────────────────────────
-          _SectionHeader(''),
+          const _SectionHeader(''),
           ListTile(
-            leading: const Icon(Icons.play_circle_outline, color: AppColors.primary),
+            leading:
+                const Icon(Icons.play_circle_outline, color: AppColors.primary),
             title: Text(l10n.replayTutorial),
-            trailing: const Icon(Icons.chevron_right, color: AppColors.textHint),
+            trailing:
+                const Icon(Icons.chevron_right, color: AppColors.textHint),
             onTap: _replayTutorial,
           ),
           ListTile(
             leading: const Icon(Icons.view_list, color: AppColors.primary),
             title: Text(l10n.templates),
-            trailing: const Icon(Icons.chevron_right, color: AppColors.textHint),
+            trailing:
+                const Icon(Icons.chevron_right, color: AppColors.textHint),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(l10n.templatesComingSoon)),
@@ -96,10 +99,12 @@ class _ManagePageState extends State<ManagePage>
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.info_outline, color: AppColors.textSecondary),
+            leading:
+                const Icon(Icons.info_outline, color: AppColors.textSecondary),
             title: Text(l10n.about),
             subtitle: Text(l10n.version('1.0.0')),
-            trailing: const Icon(Icons.chevron_right, color: AppColors.textHint),
+            trailing:
+                const Icon(Icons.chevron_right, color: AppColors.textHint),
             onTap: () => showAboutDialog(
               context: context,
               applicationName: 'RepLog',
@@ -159,7 +164,7 @@ class _SegmentedTile extends StatelessWidget {
             .toList(),
         selected: {selectedIndex},
         onSelectionChanged: (s) => onChanged(s.first),
-        style: ButtonStyle(
+        style: const ButtonStyle(
           tapTargetSize: MaterialTapTargetSize.padded,
         ),
       ),

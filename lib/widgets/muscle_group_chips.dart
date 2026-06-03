@@ -15,14 +15,22 @@ const kMuscleGroups = [
 String muscleGroupLabel(BuildContext context, String group) {
   final l10n = AppLocalizations.of(context)!;
   switch (group) {
-    case 'chest':      return l10n.muscleChest;
-    case 'back':       return l10n.muscleBack;
-    case 'shoulders':  return l10n.muscleShoulders;
-    case 'legs':       return l10n.muscleLegs;
-    case 'arms':       return l10n.muscleArms;
-    case 'core':       return l10n.muscleCore;
-    case 'full_body':  return l10n.muscleFullBody;
-    default:           return group;
+    case 'chest':
+      return l10n.muscleChest;
+    case 'back':
+      return l10n.muscleBack;
+    case 'shoulders':
+      return l10n.muscleShoulders;
+    case 'legs':
+      return l10n.muscleLegs;
+    case 'arms':
+      return l10n.muscleArms;
+    case 'core':
+      return l10n.muscleCore;
+    case 'full_body':
+      return l10n.muscleFullBody;
+    default:
+      return group;
   }
 }
 
@@ -61,12 +69,13 @@ class MuscleGroupChips extends StatelessWidget {
             ),
             selected: isSelected,
             onSelected: (_) => onSelected(group),
-            backgroundColor: color.withOpacity(0.1),
+            backgroundColor: color.withValues(alpha: 0.1),
             selectedColor: color,
             checkmarkColor: Colors.white,
             showCheckmark: false,
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            side: BorderSide(color: color.withOpacity(isSelected ? 0 : 0.4)),
+            side: BorderSide(
+                color: color.withValues(alpha: isSelected ? 0 : 0.4)),
           );
         },
       ),
@@ -91,7 +100,7 @@ class MuscleGroupTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
