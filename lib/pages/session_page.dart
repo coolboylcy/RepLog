@@ -9,11 +9,11 @@ import '../models/workout_set.dart';
 import '../models/exercise.dart';
 import '../models/workout_setup.dart';
 import '../theme/app_colors.dart';
-import '../widgets/muscle_group_chips.dart';
-import '../widgets/exercise_picker.dart';
 import '../widgets/set_input_panel.dart';
 import '../widgets/rest_timer_widget.dart';
 import '../widgets/session_set_list.dart';
+import '../widgets/exercise_demo.dart';
+import '../widgets/muscle_group_chips.dart';
 
 class SessionPage extends StatefulWidget {
   final Workout workout;
@@ -97,39 +97,6 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
     final svc = ServiceLocator.of(context).workoutService;
     final sets = await svc.getSetsForWorkout(_workout.id!);
     setState(() => _sets = sets);
-  }
-
-  Future<void> _selectMuscleGroup(String group) async {
-    HapticFeedback.selectionClick();
-    setState(() {
-      _selectedMuscleGroup = group;
-      _selectedExercise = null;
-    });
-  }
-
-  Future<void> _pickExercise() async {
-    if (_selectedMuscleGroup == null) return;
-    final svc = ServiceLocator.of(context).exerciseService;
-    final recent = await svc.getRecentlyUsed(_selectedMuscleGroup!);
-    final all = await svc.getByMuscleGroup(_selectedMuscleGroup!);
-
-    if (!mounted) return;
-    final exercise = await ExercisePickerSheet.show(
-      context,
-      muscleGroup: _selectedMuscleGroup!,
-      recentExercises: recent,
-      allExercises: all,
-    );
-    if (exercise == null) return;
-    if (!mounted) return;
-
-    final workoutSvc = ServiceLocator.of(context).workoutService;
-    final lastSets = await workoutSvc.getLastSetsForExercise(exercise.id!);
-    if (!mounted) return;
-    setState(() {
-      _selectedExercise = exercise;
-      _lastSet = lastSets.isNotEmpty ? lastSets.first : null;
-    });
   }
 
   Future<void> _logSet() async {
@@ -257,8 +224,6 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -276,58 +241,13 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
                 onEnd: _endWorkout,
               ),
 
-              // ── 肌群选择 ──────────────────────────
-              const SizedBox(height: 12),
-              MuscleGroupChips(
-                selected: _selectedMuscleGroup,
-                onSelected: _selectMuscleGroup,
-              ),
-
-              // ── 选中的动作 / 选择按钮 ─────────────
+              // ── 当前动作 ──────────────────────────
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: GestureDetector(
-                  onTap: _selectedMuscleGroup != null ? _pickExercise : null,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: _selectedExercise != null
-                            ? AppColors.primary.withValues(alpha: 0.3)
-                            : Colors.grey[200]!,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.fitness_center,
-                            size: 18, color: AppColors.primary),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _selectedExercise?.localizedName(
-                                    Localizations.localeOf(context)
-                                        .languageCode) ??
-                                (_selectedMuscleGroup != null
-                                    ? l10n.selectExercise
-                                    : l10n.selectMuscleGroup),
-                            style: TextStyle(
-                              color: _selectedExercise != null
-                                  ? AppColors.textPrimary
-                                  : AppColors.textHint,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right,
-                            size: 18, color: AppColors.textHint),
-                      ],
-                    ),
-                  ),
+                child: _CurrentExerciseCard(
+                  exercise: _selectedExercise,
+                  muscleGroup: _selectedMuscleGroup,
                 ),
               ),
 
@@ -430,6 +350,88 @@ class _TopBar extends StatelessWidget {
             child: Text(l10n.endWorkout,
                 style: const TextStyle(fontWeight: FontWeight.w600)),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CurrentExerciseCard extends StatelessWidget {
+  final Exercise? exercise;
+  final String? muscleGroup;
+
+  const _CurrentExerciseCard({
+    required this.exercise,
+    required this.muscleGroup,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    final group = muscleGroup ?? exercise?.muscleGroup;
+    final color =
+        group == null ? AppColors.textHint : AppColors.forMuscleGroup(group);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        children: [
+          if (group != null)
+            ExerciseDemoLoop(muscleGroup: group, size: 64)
+          else
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child:
+                  const Icon(Icons.fitness_center, color: AppColors.textHint),
+            ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '当前动作',
+                  style: TextStyle(
+                    color: AppColors.textHint,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  exercise?.localizedName(locale) ?? '未配置动作',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (group != null)
+                  MuscleGroupTag(muscleGroup: group)
+                else
+                  const Text(
+                    '请从首页重新开始并完成训练配置',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const Icon(Icons.lock_outline, color: AppColors.textHint, size: 18),
         ],
       ),
     );

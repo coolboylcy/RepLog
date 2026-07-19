@@ -1,5 +1,6 @@
-import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
 class ExerciseDemoLoop extends StatefulWidget {
@@ -9,7 +10,7 @@ class ExerciseDemoLoop extends StatefulWidget {
   const ExerciseDemoLoop({
     super.key,
     required this.muscleGroup,
-    this.size = 56,
+    this.size = 72,
   });
 
   @override
@@ -19,14 +20,24 @@ class ExerciseDemoLoop extends StatefulWidget {
 class _ExerciseDemoLoopState extends State<ExerciseDemoLoop>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  ui.Image? _atlas;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 1100),
+    )..repeat();
+    _loadAtlas();
+  }
+
+  Future<void> _loadAtlas() async {
+    final data = await rootBundle.load('assets/images/exercise_demo_atlas.png');
+    final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    final frame = await codec.getNextFrame();
+    if (!mounted) return;
+    setState(() => _atlas = frame.image);
   }
 
   @override
@@ -37,130 +48,95 @@ class _ExerciseDemoLoopState extends State<ExerciseDemoLoop>
 
   @override
   Widget build(BuildContext context) {
+    final color = AppColors.forMuscleGroup(widget.muscleGroup);
     return SizedBox(
       width: widget.size,
       height: widget.size,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.forMuscleGroup(widget.muscleGroup)
-              .withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(12),
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.14)),
         ),
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) => CustomPaint(
-            painter: _ExerciseDemoPainter(
-              progress: Curves.easeInOut.transform(_controller.value),
-              color: AppColors.forMuscleGroup(widget.muscleGroup),
-              muscleGroup: widget.muscleGroup,
-            ),
-          ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: _atlas == null
+              ? Center(
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: color,
+                    ),
+                  ),
+                )
+              : AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, _) {
+                    final frame = (_controller.value * 4).floor().clamp(0, 3);
+                    return CustomPaint(
+                      painter: _AtlasFramePainter(
+                        image: _atlas!,
+                        row: _rowForMuscle(widget.muscleGroup),
+                        frame: frame,
+                      ),
+                    );
+                  },
+                ),
         ),
       ),
     );
   }
+
+  int _rowForMuscle(String group) {
+    return switch (group) {
+      'chest' => 0,
+      'back' => 1,
+      'shoulders' => 2,
+      'legs' => 3,
+      'arms' => 4,
+      'core' => 5,
+      'full_body' => 6,
+      _ => 6,
+    };
+  }
 }
 
-class _ExerciseDemoPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-  final String muscleGroup;
+class _AtlasFramePainter extends CustomPainter {
+  final ui.Image image;
+  final int row;
+  final int frame;
 
-  _ExerciseDemoPainter({
-    required this.progress,
-    required this.color,
-    required this.muscleGroup,
+  _AtlasFramePainter({
+    required this.image,
+    required this.row,
+    required this.frame,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..color = color
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-    final light = Paint()
-      ..color = color.withValues(alpha: 0.22)
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-    final fill = Paint()
-      ..color = color.withValues(alpha: 0.85)
-      ..style = PaintingStyle.fill;
+    final frameWidth = image.width / 4;
+    final frameHeight = image.height / 7;
+    final src = Rect.fromLTWH(
+      frameWidth * frame,
+      frameHeight * row,
+      frameWidth,
+      frameHeight,
+    );
+    final dst = Offset.zero & size;
+    final paint = Paint()
+      ..isAntiAlias = true
+      ..filterQuality = FilterQuality.high;
 
-    final c = Offset(size.width / 2, size.height * 0.48);
-    canvas.drawCircle(
-        Offset(c.dx, size.height * 0.22), size.width * 0.08, fill);
-    canvas.drawLine(Offset(c.dx, size.height * 0.31),
-        Offset(c.dx, size.height * 0.58), stroke);
-
-    final phase = (progress - 0.5) * 2;
-    switch (muscleGroup) {
-      case 'legs':
-        final knee = size.height * (0.72 - progress * 0.10);
-        canvas.drawLine(Offset(c.dx - 5, size.height * 0.58),
-            Offset(c.dx - 18, knee), stroke);
-        canvas.drawLine(Offset(c.dx + 5, size.height * 0.58),
-            Offset(c.dx + 18, knee), stroke);
-        canvas.drawLine(Offset(c.dx - 18, knee),
-            Offset(c.dx - 22, size.height * 0.90), light);
-        canvas.drawLine(Offset(c.dx + 18, knee),
-            Offset(c.dx + 22, size.height * 0.90), light);
-        break;
-      case 'back':
-        canvas.drawArc(
-          Rect.fromCenter(
-              center: c, width: size.width * 0.62, height: size.height * 0.46),
-          math.pi * (0.12 + progress * 0.18),
-          math.pi * 0.75,
-          false,
-          stroke,
-        );
-        canvas.drawArc(
-          Rect.fromCenter(
-              center: c, width: size.width * 0.62, height: size.height * 0.46),
-          math.pi * (0.88 - progress * 0.18),
-          -math.pi * 0.75,
-          false,
-          stroke,
-        );
-        break;
-      case 'arms':
-        canvas.drawLine(Offset(c.dx - 7, size.height * 0.38),
-            Offset(c.dx - 23, size.height * (0.58 - progress * 0.20)), stroke);
-        canvas.drawLine(Offset(c.dx + 7, size.height * 0.38),
-            Offset(c.dx + 23, size.height * (0.58 - progress * 0.20)), stroke);
-        canvas.drawCircle(
-            Offset(c.dx - 23, size.height * (0.58 - progress * 0.20)), 3, fill);
-        canvas.drawCircle(
-            Offset(c.dx + 23, size.height * (0.58 - progress * 0.20)), 3, fill);
-        break;
-      case 'core':
-        canvas.drawArc(
-          Rect.fromCenter(
-              center: Offset(c.dx, size.height * 0.60),
-              width: size.width * 0.50,
-              height: size.height * 0.28),
-          math.pi * (1.15 + progress * 0.20),
-          math.pi * 0.70,
-          false,
-          stroke,
-        );
-        break;
-      default:
-        canvas.drawLine(Offset(c.dx - 6, size.height * 0.38),
-            Offset(c.dx - 23, size.height * (0.38 + phase * 0.08)), stroke);
-        canvas.drawLine(Offset(c.dx + 6, size.height * 0.38),
-            Offset(c.dx + 23, size.height * (0.38 + phase * 0.08)), stroke);
-        canvas.drawLine(Offset(c.dx - 24, size.height * (0.34 + phase * 0.08)),
-            Offset(c.dx + 24, size.height * (0.34 + phase * 0.08)), light);
-        break;
-    }
+    canvas.drawColor(Colors.white, BlendMode.src);
+    canvas.drawImageRect(image, src, dst, paint);
   }
 
   @override
-  bool shouldRepaint(covariant _ExerciseDemoPainter oldDelegate) =>
-      oldDelegate.progress != progress ||
-      oldDelegate.color != color ||
-      oldDelegate.muscleGroup != muscleGroup;
+  bool shouldRepaint(covariant _AtlasFramePainter oldDelegate) {
+    return oldDelegate.image != image ||
+        oldDelegate.row != row ||
+        oldDelegate.frame != frame;
+  }
 }

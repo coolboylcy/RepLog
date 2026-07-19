@@ -466,9 +466,14 @@ class _MuscleMapCard extends StatelessWidget {
         children: [
           Expanded(
             flex: 5,
-            child: AnatomyMuscleMap(
-              selectedGroup: selectedMuscleGroup,
-              onSelected: onSelected,
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: AnatomyMuscleMap(
+                  selectedGroup: selectedMuscleGroup,
+                  onSelected: onSelected,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),

@@ -15,124 +15,114 @@ class AnatomyMuscleMap extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapUp: (details) {
-            final size = Size(constraints.maxWidth, constraints.maxHeight);
-            final group = _hitTest(details.localPosition, size);
-            if (group != null) onSelected(group);
-          },
-          child: CustomPaint(
-            painter: _AnatomyPainter(selectedGroup),
-            size: Size.infinite,
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(
+                'assets/images/anatomy_muscle_map.png',
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+              ),
+              ..._zones.map(
+                (zone) => _HitZone(
+                  zone: zone,
+                  size: Size(constraints.maxWidth, constraints.maxHeight),
+                  selected: selectedGroup == zone.group ||
+                      selectedGroup == 'full_body',
+                  onTap: () => onSelected(zone.group),
+                ),
+              ),
+              if (selectedGroup != null)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.forMuscleGroup(selectedGroup!)
+                          .withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      child: Text(
+                        '已选择',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         );
       },
     );
   }
-
-  String? _hitTest(Offset point, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final x = point.dx / w;
-    final y = point.dy / h;
-
-    if (y < 0.25 && x > 0.34 && x < 0.66) return 'shoulders';
-    if (y >= 0.25 && y < 0.43 && x > 0.34 && x < 0.66) return 'chest';
-    if (y >= 0.32 && y < 0.58 && x > 0.28 && x < 0.72) return 'back';
-    if (y >= 0.42 && y < 0.62 && x > 0.38 && x < 0.62) return 'core';
-    if (y >= 0.24 && y < 0.58 && (x <= 0.34 || x >= 0.66)) return 'arms';
-    if (y >= 0.60 && x > 0.33 && x < 0.67) return 'legs';
-    if (y >= 0.58 && (x <= 0.33 || x >= 0.67)) return 'full_body';
-    return null;
-  }
 }
 
-class _AnatomyPainter extends CustomPainter {
-  final String? selectedGroup;
+class _HitZone extends StatelessWidget {
+  final _MuscleZone zone;
+  final Size size;
+  final bool selected;
+  final VoidCallback onTap;
 
-  _AnatomyPainter(this.selectedGroup);
+  const _HitZone({
+    required this.zone,
+    required this.size,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final basePaint = Paint()
-      ..color = AppColors.textSecondary.withValues(alpha: 0.12)
-      ..style = PaintingStyle.fill;
-    final linePaint = Paint()
-      ..color = AppColors.textSecondary.withValues(alpha: 0.22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    Rect r(double left, double top, double width, double height) =>
-        Rect.fromLTWH(
-          size.width * left,
-          size.height * top,
-          size.width * width,
-          size.height * height,
-        );
-
-    void drawPart(String group, RRect shape) {
-      final selected = selectedGroup == group ||
-          (selectedGroup == 'full_body' && group != 'core');
-      final color = AppColors.forMuscleGroup(
-        selectedGroup == 'full_body' ? 'full_body' : group,
-      );
-      canvas.drawRRect(
-        shape,
-        Paint()
-          ..color = selected ? color.withValues(alpha: 0.76) : basePaint.color
-          ..style = PaintingStyle.fill,
-      );
-      canvas.drawRRect(shape, linePaint);
-    }
-
-    canvas.drawOval(r(0.41, 0.03, 0.18, 0.12), basePaint);
-    canvas.drawOval(r(0.41, 0.03, 0.18, 0.12), linePaint);
-
-    drawPart(
-        'shoulders',
-        RRect.fromRectAndRadius(
-            r(0.30, 0.18, 0.40, 0.10), const Radius.circular(18)));
-    drawPart(
-        'chest',
-        RRect.fromRectAndRadius(
-            r(0.35, 0.27, 0.30, 0.16), const Radius.circular(18)));
-    drawPart(
-        'back',
-        RRect.fromRectAndRadius(
-            r(0.32, 0.32, 0.36, 0.18), const Radius.circular(18)));
-    drawPart(
-        'core',
-        RRect.fromRectAndRadius(
-            r(0.39, 0.45, 0.22, 0.16), const Radius.circular(14)));
-    drawPart(
-        'arms',
-        RRect.fromRectAndRadius(
-            r(0.18, 0.26, 0.15, 0.34), const Radius.circular(18)));
-    drawPart(
-        'arms',
-        RRect.fromRectAndRadius(
-            r(0.67, 0.26, 0.15, 0.34), const Radius.circular(18)));
-    drawPart(
-        'legs',
-        RRect.fromRectAndRadius(
-            r(0.35, 0.62, 0.13, 0.32), const Radius.circular(18)));
-    drawPart(
-        'legs',
-        RRect.fromRectAndRadius(
-            r(0.52, 0.62, 0.13, 0.32), const Radius.circular(18)));
-
-    final highlight = selectedGroup == null
-        ? AppColors.primary
-        : AppColors.forMuscleGroup(selectedGroup!);
-    canvas.drawCircle(
-      Offset(size.width * 0.50, size.height * 0.53),
-      4,
-      Paint()..color = highlight,
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: zone.rect.left * size.width,
+      top: zone.rect.top * size.height,
+      width: zone.rect.width * size.width,
+      height: zone.rect.height * size.height,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          decoration: BoxDecoration(
+            color: selected
+                ? AppColors.forMuscleGroup(zone.group).withValues(alpha: 0.18)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+            border: selected
+                ? Border.all(
+                    color: AppColors.forMuscleGroup(zone.group),
+                    width: 1.4,
+                  )
+                : null,
+          ),
+        ),
+      ),
     );
   }
-
-  @override
-  bool shouldRepaint(covariant _AnatomyPainter oldDelegate) =>
-      oldDelegate.selectedGroup != selectedGroup;
 }
+
+class _MuscleZone {
+  final String group;
+  final Rect rect;
+
+  const _MuscleZone(this.group, this.rect);
+}
+
+const _zones = [
+  _MuscleZone('shoulders', Rect.fromLTWH(0.12, 0.16, 0.78, 0.13)),
+  _MuscleZone('chest', Rect.fromLTWH(0.09, 0.21, 0.33, 0.19)),
+  _MuscleZone('back', Rect.fromLTWH(0.57, 0.18, 0.34, 0.30)),
+  _MuscleZone('arms', Rect.fromLTWH(0.02, 0.25, 0.22, 0.35)),
+  _MuscleZone('arms', Rect.fromLTWH(0.76, 0.24, 0.22, 0.36)),
+  _MuscleZone('core', Rect.fromLTWH(0.18, 0.35, 0.22, 0.22)),
+  _MuscleZone('legs', Rect.fromLTWH(0.14, 0.55, 0.30, 0.38)),
+  _MuscleZone('legs', Rect.fromLTWH(0.58, 0.53, 0.30, 0.41)),
+];

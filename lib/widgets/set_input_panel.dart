@@ -289,10 +289,12 @@ class _InputStepper extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Container(
-          height: 52,
+          height: 58,
           decoration: BoxDecoration(
             color: AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
+            border:
+                Border.all(color: AppColors.textHint.withValues(alpha: 0.12)),
           ),
           child: Row(
             children: [
@@ -318,34 +320,57 @@ class _InputStepper extends StatelessWidget {
         ),
         if (smallDecrease != null && smallIncrease != null)
           Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: const EdgeInsets.only(top: 6),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextButton(
-                  onPressed: smallDecrease,
-                  style: TextButton.styleFrom(
-                    minimumSize: Size.zero,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                Expanded(
+                  child: _MiniStepButton(
+                    label: '-1.25',
+                    onTap: smallDecrease!,
                   ),
-                  child: const Text('-1.25', style: TextStyle(fontSize: 11)),
                 ),
-                TextButton(
-                  onPressed: smallIncrease,
-                  style: TextButton.styleFrom(
-                    minimumSize: Size.zero,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _MiniStepButton(
+                    label: '+1.25',
+                    onTap: smallIncrease!,
                   ),
-                  child: const Text('+1.25', style: TextStyle(fontSize: 11)),
                 ),
               ],
             ),
           ),
       ],
+    );
+  }
+}
+
+class _MiniStepButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _MiniStepButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        height: 28,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -361,9 +386,16 @@ class _StepButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Icon(icon, size: 22, color: AppColors.primary),
+      child: SizedBox(
+        width: 52,
+        height: 58,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.74),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, size: 24, color: AppColors.primary),
+        ),
       ),
     );
   }
