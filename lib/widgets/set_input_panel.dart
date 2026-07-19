@@ -8,6 +8,8 @@ class SetInputPanel extends StatefulWidget {
   final WorkoutSet? lastSet;
   final double? initialWeight;
   final int? initialReps;
+  final int? targetSets;
+  final int completedSets;
   final String? recommendationLabel;
   final bool isKg;
   final VoidCallback onLogSet;
@@ -18,6 +20,8 @@ class SetInputPanel extends StatefulWidget {
     this.lastSet,
     this.initialWeight,
     this.initialReps,
+    this.targetSets,
+    this.completedSets = 0,
     this.recommendationLabel,
     this.isKg = true,
     required this.onLogSet,
@@ -53,8 +57,8 @@ class SetInputPanelState extends State<SetInputPanel> {
   }
 
   double get _seedWeight =>
-      widget.initialWeight ?? widget.lastSet?.weight ?? 20.0;
-  int get _seedReps => widget.initialReps ?? widget.lastSet?.reps ?? 10;
+      widget.lastSet?.weight ?? widget.initialWeight ?? 20.0;
+  int get _seedReps => widget.lastSet?.reps ?? widget.initialReps ?? 10;
 
   void _setWeight(double value) {
     if (value < 0) return;
@@ -119,6 +123,27 @@ class SetInputPanelState extends State<SetInputPanel> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          if (widget.targetSets != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '本动作进度：${widget.completedSets} / ${widget.targetSets} 组',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
             ),
           if (widget.lastSet != null)

@@ -31,6 +31,8 @@ class SessionPage extends StatefulWidget {
 
 class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
   late Workout _workout;
+  List<PlannedExercise> _plan = [];
+  int _currentPlanIndex = 0;
   String? _selectedMuscleGroup;
   Exercise? _selectedExercise;
   List<WorkoutSet> _sets = [];
@@ -50,9 +52,9 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _workout = widget.workout;
     final setup = widget.initialSetup;
-    if (setup != null) {
-      _selectedMuscleGroup = setup.muscleGroup;
-      _selectedExercise = setup.exercise;
+    if (setup != null && setup.exercises.isNotEmpty) {
+      _plan = setup.exercises;
+      _applyPlanIndex(0);
     }
     _startElapsedTimer();
     _loadSets();
@@ -61,13 +63,31 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
   }
 
   Future<void> _loadInitialLastSet() async {
-    final setup = widget.initialSetup;
-    if (setup?.exercise.id == null) return;
+    final exercise = _selectedExercise;
+    if (exercise?.id == null) return;
     final workoutSvc = ServiceLocator.of(context).workoutService;
-    final lastSets =
-        await workoutSvc.getLastSetsForExercise(setup!.exercise.id!);
+    final lastSets = await workoutSvc.getLastSetsForExercise(exercise!.id!);
     if (!mounted) return;
     setState(() => _lastSet = lastSets.isNotEmpty ? lastSets.first : null);
+  }
+
+  void _applyPlanIndex(int index) {
+    if (_plan.isEmpty || index < 0 || index >= _plan.length) return;
+    final item = _plan[index];
+    _currentPlanIndex = index;
+    _selectedMuscleGroup = item.muscleGroup;
+    _selectedExercise = item.exercise;
+    final sessionSets = _sets
+        .where((set) => set.exerciseId == item.exercise.id)
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    _lastSet = sessionSets.isNotEmpty ? sessionSets.first : null;
+  }
+
+  Future<void> _switchPlanExercise(int index) async {
+    HapticFeedback.selectionClick();
+    setState(() => _applyPlanIndex(index));
+    if (_lastSet == null) await _loadInitialLastSet();
   }
 
   Future<void> _loadWeightUnit() async {
@@ -215,6 +235,19 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  PlannedExercise? get _currentPlannedExercise =>
+      _plan.isEmpty ? null : _plan[_currentPlanIndex];
+
+  int _loggedSetsFor(PlannedExercise item) {
+    return _sets.where((set) => set.exerciseId == item.exercise.id).length;
+  }
+
+  void _goToNextExercise() {
+    if (_currentPlanIndex + 1 < _plan.length) {
+      _switchPlanExercise(_currentPlanIndex + 1);
+    }
+  }
+
   @override
   void dispose() {
     _elapsedTimer?.cancel();
@@ -246,10 +279,25 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _CurrentExerciseCard(
-                  exercise: _selectedExercise,
-                  muscleGroup: _selectedMuscleGroup,
+                  item: _currentPlannedExercise,
+                  loggedSets: _currentPlannedExercise == null
+                      ? 0
+                      : _loggedSetsFor(_currentPlannedExercise!),
+                  onNext: _currentPlanIndex + 1 < _plan.length
+                      ? _goToNextExercise
+                      : null,
                 ),
               ),
+
+              if (_plan.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                _PlanProgressRow(
+                  plan: _plan,
+                  currentIndex: _currentPlanIndex,
+                  loggedSetsFor: _loggedSetsFor,
+                  onSelected: _switchPlanExercise,
+                ),
+              ],
 
               // ── 已记录组数 ────────────────────────
               Expanded(
@@ -270,9 +318,14 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
               SetInputPanel(
                 key: _inputPanelKey,
                 lastSet: _lastSet,
-                initialWeight: widget.initialSetup?.recommendedWeight,
-                initialReps: widget.initialSetup?.recommendedReps,
-                recommendationLabel: widget.initialSetup?.recommendationReason,
+                initialWeight: _currentPlannedExercise?.recommendedWeight,
+                initialReps: _currentPlannedExercise?.targetReps,
+                targetSets: _currentPlannedExercise?.targetSets,
+                completedSets: _currentPlannedExercise == null
+                    ? 0
+                    : _loggedSetsFor(_currentPlannedExercise!),
+                recommendationLabel:
+                    _currentPlannedExercise?.recommendationReason,
                 isKg: _isKg,
                 onLogSet: _logSet,
                 onValuesChanged: (_, __) {},
@@ -357,20 +410,29 @@ class _TopBar extends StatelessWidget {
 }
 
 class _CurrentExerciseCard extends StatelessWidget {
-  final Exercise? exercise;
-  final String? muscleGroup;
+  final PlannedExercise? item;
+  final int loggedSets;
+  final VoidCallback? onNext;
 
   const _CurrentExerciseCard({
-    required this.exercise,
-    required this.muscleGroup,
+    required this.item,
+    required this.loggedSets,
+    required this.onNext,
   });
 
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).languageCode;
-    final group = muscleGroup ?? exercise?.muscleGroup;
+    final exercise = item?.exercise;
+    final group = item?.muscleGroup ?? exercise?.muscleGroup;
     final color =
         group == null ? AppColors.textHint : AppColors.forMuscleGroup(group);
+    final target = item?.targetSets ?? 0;
+    final weight = item == null
+        ? ''
+        : item!.recommendedWeight == item!.recommendedWeight.truncate()
+            ? item!.recommendedWeight.toInt().toString()
+            : item!.recommendedWeight.toStringAsFixed(1);
 
     return Container(
       width: double.infinity,
@@ -418,9 +480,18 @@ class _CurrentExerciseCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                if (group != null)
-                  MuscleGroupTag(muscleGroup: group)
-                else
+                if (item != null) ...[
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      MuscleGroupTag(muscleGroup: item!.muscleGroup),
+                      _ProgressPill(text: '$loggedSets / $target 组'),
+                      _ProgressPill(text: '$weight kg × ${item!.targetReps}'),
+                    ],
+                  ),
+                ] else
                   const Text(
                     '请从首页重新开始并完成训练配置',
                     style: TextStyle(
@@ -428,11 +499,129 @@ class _CurrentExerciseCard extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
+                if (item?.recommendationReason.isNotEmpty == true) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    item!.recommendationReason,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
-          const Icon(Icons.lock_outline, color: AppColors.textHint, size: 18),
+          if (onNext != null)
+            TextButton(
+              onPressed: onNext,
+              child: const Text('下一动作'),
+            )
+          else
+            const Icon(Icons.check_circle_outline,
+                color: AppColors.textHint, size: 20),
         ],
+      ),
+    );
+  }
+}
+
+class _PlanProgressRow extends StatelessWidget {
+  final List<PlannedExercise> plan;
+  final int currentIndex;
+  final int Function(PlannedExercise item) loggedSetsFor;
+  final ValueChanged<int> onSelected;
+
+  const _PlanProgressRow({
+    required this.plan,
+    required this.currentIndex,
+    required this.loggedSetsFor,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return SizedBox(
+      height: 50,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: plan.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final item = plan[index];
+          final selected = index == currentIndex;
+          final color = AppColors.forMuscleGroup(item.muscleGroup);
+          final done = loggedSetsFor(item) >= item.targetSets;
+          return InkWell(
+            onTap: () => onSelected(index),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 130,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: selected
+                    ? color.withValues(alpha: 0.15)
+                    : AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: selected ? color : color.withValues(alpha: 0.12),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    done ? Icons.check_circle : Icons.radio_button_unchecked,
+                    size: 17,
+                    color: done ? AppColors.success : color,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      item.exercise.localizedName(locale),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: selected ? color : AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ProgressPill extends StatelessWidget {
+  final String text;
+
+  const _ProgressPill({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

@@ -534,7 +534,7 @@ class _StartWorkoutButton extends StatelessWidget {
         onPressed: onStart,
         icon: Icon(hasActive ? Icons.play_arrow : Icons.add, size: 22),
         label: Text(
-          hasActive ? l10n.continueWorkout : l10n.startWorkout,
+          hasActive ? l10n.continueWorkout : '制定今日计划',
           style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(

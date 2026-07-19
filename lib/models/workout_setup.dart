@@ -42,19 +42,51 @@ extension TrainingGoalText on TrainingGoal {
 }
 
 class WorkoutSetup {
-  final String muscleGroup;
-  final Exercise exercise;
   final TrainingGoal goal;
-  final double recommendedWeight;
-  final int recommendedReps;
-  final String recommendationReason;
+  final String primaryMuscleGroup;
+  final List<PlannedExercise> exercises;
+  final String createdAt;
 
   const WorkoutSetup({
+    required this.goal,
+    required this.primaryMuscleGroup,
+    required this.exercises,
+    required this.createdAt,
+  });
+}
+
+class PlannedExercise {
+  final Exercise exercise;
+  final String muscleGroup;
+  final TrainingGoal goal;
+  final double recommendedWeight;
+  final int targetReps;
+  final int targetSets;
+  final String recommendationReason;
+
+  const PlannedExercise({
     required this.muscleGroup,
     required this.exercise,
     required this.goal,
     required this.recommendedWeight,
-    required this.recommendedReps,
+    required this.targetReps,
+    required this.targetSets,
     required this.recommendationReason,
   });
+
+  PlannedExercise copyWith({
+    double? recommendedWeight,
+    int? targetReps,
+    int? targetSets,
+  }) {
+    return PlannedExercise(
+      muscleGroup: muscleGroup,
+      exercise: exercise,
+      goal: goal,
+      recommendedWeight: recommendedWeight ?? this.recommendedWeight,
+      targetReps: targetReps ?? this.targetReps,
+      targetSets: targetSets ?? this.targetSets,
+      recommendationReason: recommendationReason,
+    );
+  }
 }

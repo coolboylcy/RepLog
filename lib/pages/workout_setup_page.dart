@@ -20,13 +20,10 @@ class WorkoutSetupPage extends StatefulWidget {
 class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
   TrainingGoal _goal = TrainingGoal.hypertrophy;
   String? _selectedMuscleGroup;
-  Exercise? _selectedExercise;
-  List<Exercise> _recentExercises = [];
   List<Exercise> _allExercises = [];
-  bool _loadingExercises = false;
-  double _recommendedWeight = 20;
-  int _recommendedReps = 10;
-  String _recommendationReason = '根据目标给出起始建议';
+  List<Exercise> _recentExercises = [];
+  List<PlannedExercise> _plan = [];
+  bool _loadingPlan = false;
 
   @override
   void initState() {
@@ -39,7 +36,6 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
     if (!mounted) return;
     setState(() {
       _goal = TrainingGoalText.fromStorage(prefs.getString('training_goal'));
-      _recommendedReps = _targetRepsForGoal(_goal);
     });
   }
 
@@ -49,22 +45,21 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
     await prefs.setString('training_goal', goal.storageKey);
     if (!mounted) return;
     setState(() => _goal = goal);
-    await _refreshRecommendation();
+    await _generatePlan();
   }
 
   Future<void> _selectMuscleGroup(String group) async {
     HapticFeedback.selectionClick();
     setState(() {
       _selectedMuscleGroup = group;
-      _selectedExercise = null;
-      _allExercises = [];
-      _recentExercises = [];
-      _loadingExercises = true;
-      _recommendedWeight = _defaultWeightForGroup(group);
-      _recommendedReps = _targetRepsForGoal(_goal);
-      _recommendationReason = '先按你的目标和肌群给一个保守起点';
+      _loadingPlan = true;
+      _plan = [];
     });
+    await _loadExercises(group);
+    await _generatePlan();
+  }
 
+  Future<void> _loadExercises(String group) async {
     final svc = ServiceLocator.of(context).exerciseService;
     final recent = await svc.getRecentlyUsed(group);
     final all = await svc.getByMuscleGroup(group);
@@ -72,38 +67,57 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
     setState(() {
       _recentExercises = recent;
       _allExercises = all;
-      _loadingExercises = false;
     });
   }
 
-  Future<void> _selectExercise(Exercise exercise) async {
-    HapticFeedback.selectionClick();
-    setState(() => _selectedExercise = exercise);
-    await _refreshRecommendation();
-  }
-
-  Future<void> _refreshRecommendation() async {
+  Future<void> _generatePlan() async {
     final group = _selectedMuscleGroup;
-    final exercise = _selectedExercise;
-    if (group == null || exercise == null || exercise.id == null) {
-      if (!mounted) return;
-      setState(() {
-        _recommendedWeight = _defaultWeightForGroup(group);
-        _recommendedReps = _targetRepsForGoal(_goal);
-        _recommendationReason = '先按你的目标和肌群给一个保守起点';
-      });
-      return;
+    if (group == null) return;
+
+    setState(() => _loadingPlan = true);
+    if (_allExercises.isEmpty) {
+      await _loadExercises(group);
     }
 
-    final svc = ServiceLocator.of(context).workoutService;
-    final lastSets = await svc.getLastSetsForExercise(exercise.id!);
-    final recommendation = _buildRecommendation(group, lastSets);
+    final recentIds =
+        _recentExercises.map((e) => e.id).whereType<int>().toSet();
+    final ordered = [
+      ..._recentExercises,
+      ..._allExercises.where((e) => e.id == null || !recentIds.contains(e.id)),
+    ];
+    final targetCount = group == 'core' || group == 'full_body' ? 3 : 4;
+    final selected = ordered.take(targetCount).toList();
+    final built = <PlannedExercise>[];
+    for (var i = 0; i < selected.length; i++) {
+      built.add(await _buildPlannedExercise(selected[i], index: i));
+    }
+
     if (!mounted) return;
     setState(() {
-      _recommendedWeight = recommendation.weight;
-      _recommendedReps = recommendation.reps;
-      _recommendationReason = recommendation.reason;
+      _plan = built;
+      _loadingPlan = false;
     });
+  }
+
+  Future<PlannedExercise> _buildPlannedExercise(
+    Exercise exercise, {
+    required int index,
+  }) async {
+    final group = _selectedMuscleGroup ?? exercise.muscleGroup;
+    final svc = ServiceLocator.of(context).workoutService;
+    final history = exercise.id == null
+        ? <WorkoutSet>[]
+        : await svc.getLastSetsForExercise(exercise.id!);
+    final recommendation = _buildRecommendation(group, history);
+    return PlannedExercise(
+      muscleGroup: group,
+      exercise: exercise,
+      goal: _goal,
+      recommendedWeight: recommendation.weight,
+      targetReps: recommendation.reps,
+      targetSets: _targetSetsForGoal(_goal, index),
+      recommendationReason: recommendation.reason,
+    );
   }
 
   _Recommendation _buildRecommendation(String group, List<WorkoutSet> history) {
@@ -112,7 +126,7 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
       return _Recommendation(
         weight: _defaultWeightForGroup(group),
         reps: targetReps,
-        reason: '暂无历史记录，按${_goal.label('zh')}目标推荐起始组',
+        reason: '暂无历史记录，按${_goal.label('zh')}目标给保守起点',
       );
     }
 
@@ -127,8 +141,6 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
         if (last.reps >= 7) {
           weight += 2.5;
           reason = '$reason，完成次数充足，本次小幅加重';
-        } else {
-          reason = '$reason，本次先稳住重量';
         }
         break;
       case TrainingGoal.hypertrophy:
@@ -137,8 +149,6 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
           weight += 2.5;
           reps = 10;
           reason = '$reason，上次容量足够，本次加一点重量';
-        } else {
-          reason = '$reason，本次维持中等次数';
         }
         break;
       case TrainingGoal.endurance:
@@ -155,80 +165,119 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
     );
   }
 
-  Future<void> _createCustomExercise() async {
+  void _removePlanItem(PlannedExercise item) {
+    HapticFeedback.selectionClick();
+    setState(() => _plan.remove(item));
+  }
+
+  void _changeTargetSets(PlannedExercise item, int delta) {
+    final next = (item.targetSets + delta).clamp(1, 8);
+    setState(() {
+      final index = _plan.indexOf(item);
+      if (index >= 0) _plan[index] = item.copyWith(targetSets: next);
+    });
+  }
+
+  Future<void> _addExercise() async {
     final group = _selectedMuscleGroup;
     if (group == null) return;
+
+    final usedIds = _plan.map((e) => e.exercise.id).whereType<int>().toSet();
+    final candidates = _allExercises
+        .where(
+            (exercise) => exercise.id == null || !usedIds.contains(exercise.id))
+        .toList();
+    final selected = await showModalBottomSheet<Exercise>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _AddExerciseSheet(
+        exercises: candidates,
+        muscleGroup: group,
+        onCreateCustom: () async {
+          final created = await _createCustomExercise();
+          if (ctx.mounted && created != null) Navigator.pop(ctx, created);
+        },
+      ),
+    );
+    if (selected == null || !mounted) return;
+    final item = await _buildPlannedExercise(selected, index: _plan.length);
+    if (!mounted) return;
+    setState(() => _plan.add(item));
+  }
+
+  Future<Exercise?> _createCustomExercise() async {
+    final group = _selectedMuscleGroup;
+    if (group == null) return null;
 
     final zhController = TextEditingController();
     final enController = TextEditingController();
     final created = await showDialog<Exercise>(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('创建自定义动作'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: zhController,
-                autofocus: true,
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(labelText: '动作名称'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: enController,
-                decoration: const InputDecoration(labelText: '英文名（可选）'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('取消'),
+      builder: (ctx) => AlertDialog(
+        title: const Text('创建自定义动作'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: zhController,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(labelText: '动作名称'),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                final name = zhController.text.trim();
-                if (name.isEmpty) return;
-                final service = ServiceLocator.of(context).exerciseService;
-                final exercise = await service.addCustomExercise(
-                  nameZh: name,
-                  nameEn: enController.text.trim().isEmpty
-                      ? name
-                      : enController.text.trim(),
-                  muscleGroup: group,
-                );
-                if (ctx.mounted) Navigator.pop(ctx, exercise);
-              },
-              child: const Text('保存'),
+            const SizedBox(height: 10),
+            TextField(
+              controller: enController,
+              decoration: const InputDecoration(labelText: '英文名（可选）'),
             ),
           ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final name = zhController.text.trim();
+              if (name.isEmpty) return;
+              final service = ServiceLocator.of(context).exerciseService;
+              final exercise = await service.addCustomExercise(
+                nameZh: name,
+                nameEn: enController.text.trim().isEmpty
+                    ? name
+                    : enController.text.trim(),
+                muscleGroup: group,
+              );
+              if (ctx.mounted) Navigator.pop(ctx, exercise);
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
     );
 
     zhController.dispose();
     enController.dispose();
-    if (created == null || !mounted) return;
-
-    await _selectMuscleGroup(group);
-    await _selectExercise(created);
+    if (created != null) {
+      await _loadExercises(group);
+    }
+    return created;
   }
 
   void _startWorkout() {
     final group = _selectedMuscleGroup;
-    final exercise = _selectedExercise;
-    if (group == null || exercise == null) return;
+    if (group == null || _plan.isEmpty) return;
     Navigator.pop(
       context,
       WorkoutSetup(
-        muscleGroup: group,
-        exercise: exercise,
         goal: _goal,
-        recommendedWeight: _recommendedWeight,
-        recommendedReps: _recommendedReps,
-        recommendationReason: _recommendationReason,
+        primaryMuscleGroup: group,
+        exercises: List.unmodifiable(_plan),
+        createdAt: DateTime.now().toIso8601String(),
       ),
     );
   }
@@ -236,12 +285,12 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).languageCode;
-    final canStart = _selectedMuscleGroup != null && _selectedExercise != null;
+    final canStart = _selectedMuscleGroup != null && _plan.isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('配置训练'),
+        title: const Text('今日训练计划'),
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
       ),
@@ -252,9 +301,9 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
           child: ElevatedButton.icon(
             onPressed: canStart ? _startWorkout : null,
             icon: const Icon(Icons.play_arrow),
-            label: const Text(
-              '开始训练',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            label: Text(
+              canStart ? '按计划开始训练' : '先生成今日计划',
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -270,7 +319,7 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          const _SectionTitle(step: '1', title: '选择目标和肌群'),
+          const _SectionTitle(step: '1', title: '选择今日目标和部位'),
           const SizedBox(height: 10),
           _GoalSelector(
             selected: _goal,
@@ -305,31 +354,47 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
             }).toList(),
           ),
           const SizedBox(height: 24),
-          const _SectionTitle(step: '2', title: '选择动作'),
+          Row(
+            children: [
+              const Expanded(child: _SectionTitle(step: '2', title: '本日计划')),
+              if (_selectedMuscleGroup != null)
+                TextButton.icon(
+                  onPressed: _generatePlan,
+                  icon: const Icon(Icons.auto_awesome, size: 17),
+                  label: const Text('重新生成'),
+                ),
+            ],
+          ),
           const SizedBox(height: 10),
           if (_selectedMuscleGroup == null)
-            const _EmptyStepHint(text: '先在上方选择一个肌群，再进入动作选择。')
-          else if (_loadingExercises)
+            const _EmptyStepHint(text: '先选今日训练部位，系统会自动设计动作、重量、次数和组数。')
+          else if (_loadingPlan)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 32),
               child: Center(child: CircularProgressIndicator()),
             )
-          else
-            _ExerciseSelection(
-              allExercises: _allExercises,
-              recentExercises: _recentExercises,
-              selectedExercise: _selectedExercise,
-              locale: locale,
-              onSelected: _selectExercise,
-              onCreateCustom: _createCustomExercise,
+          else ...[
+            if (_plan.isEmpty)
+              const _EmptyStepHint(text: '当前计划为空，可以添加动作或重新生成。')
+            else
+              ..._plan.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _PlanExerciseCard(
+                    item: item,
+                    locale: locale,
+                    onRemove: () => _removePlanItem(item),
+                    onDecreaseSets: () => _changeTargetSets(item, -1),
+                    onIncreaseSets: () => _changeTargetSets(item, 1),
+                  ),
+                ),
+              ),
+            OutlinedButton.icon(
+              onPressed: _addExercise,
+              icon: const Icon(Icons.add),
+              label: const Text('添加动作'),
             ),
-          const SizedBox(height: 16),
-          _RecommendationCard(
-            weight: _recommendedWeight,
-            reps: _recommendedReps,
-            reason: _recommendationReason,
-            enabled: canStart,
-          ),
+          ],
         ],
       ),
     );
@@ -339,6 +404,12 @@ class _WorkoutSetupPageState extends State<WorkoutSetupPage> {
         TrainingGoal.strength => 5,
         TrainingGoal.hypertrophy => 10,
         TrainingGoal.endurance => 15,
+      };
+
+  int _targetSetsForGoal(TrainingGoal goal, int index) => switch (goal) {
+        TrainingGoal.strength => index == 0 ? 5 : 3,
+        TrainingGoal.hypertrophy => index == 0 ? 4 : 3,
+        TrainingGoal.endurance => 3,
       };
 
   double _defaultWeightForGroup(String? group) => switch (group) {
@@ -451,7 +522,7 @@ class _MuscleMapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedLabel = selectedMuscleGroup == null
-        ? '点击图示选择肌群'
+        ? '点击图示选择部位'
         : muscleGroupLabel(context, selectedMuscleGroup!);
 
     return Container(
@@ -484,7 +555,7 @@ class _MuscleMapCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  '人体肌群',
+                  '今日部位',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -503,7 +574,7 @@ class _MuscleMapCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  '先确定训练部位，下一步只显示相关动作。',
+                  '选择后会自动生成今日动作、重量建议、次数和组数。',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     height: 1.4,
@@ -518,236 +589,203 @@ class _MuscleMapCard extends StatelessWidget {
   }
 }
 
-class _ExerciseSelection extends StatelessWidget {
-  final List<Exercise> allExercises;
-  final List<Exercise> recentExercises;
-  final Exercise? selectedExercise;
+class _PlanExerciseCard extends StatelessWidget {
+  final PlannedExercise item;
   final String locale;
-  final ValueChanged<Exercise> onSelected;
-  final VoidCallback onCreateCustom;
+  final VoidCallback onRemove;
+  final VoidCallback onDecreaseSets;
+  final VoidCallback onIncreaseSets;
 
-  const _ExerciseSelection({
-    required this.allExercises,
-    required this.recentExercises,
-    required this.selectedExercise,
+  const _PlanExerciseCard({
+    required this.item,
     required this.locale,
-    required this.onSelected,
-    required this.onCreateCustom,
+    required this.onRemove,
+    required this.onDecreaseSets,
+    required this.onIncreaseSets,
   });
 
   @override
   Widget build(BuildContext context) {
-    final recentIds = recentExercises.map((e) => e.id).whereType<int>().toSet();
-    final ordered = [
-      ...recentExercises,
-      ...allExercises.where((e) => e.id == null || !recentIds.contains(e.id)),
-    ];
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                '动作演示在卡片内循环播放，点卡片只会选中动作。',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-              ),
-            ),
-            TextButton.icon(
-              onPressed: onCreateCustom,
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('自定义'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ...ordered.map((exercise) {
-          final selected = exercise.id == selectedExercise?.id;
-          final isRecent = recentIds.contains(exercise.id);
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: _ExerciseCard(
-              exercise: exercise,
-              locale: locale,
-              selected: selected,
-              isRecent: isRecent,
-              onTap: () => onSelected(exercise),
-            ),
-          );
-        }),
-      ],
-    );
-  }
-}
-
-class _ExerciseCard extends StatelessWidget {
-  final Exercise exercise;
-  final String locale;
-  final bool selected;
-  final bool isRecent;
-  final VoidCallback onTap;
-
-  const _ExerciseCard({
-    required this.exercise,
-    required this.locale,
-    required this.selected,
-    required this.isRecent,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = AppColors.forMuscleGroup(exercise.muscleGroup);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Ink(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.12) : AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color:
-                selected ? color : AppColors.textHint.withValues(alpha: 0.18),
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            ExerciseDemoLoop(muscleGroup: exercise.muscleGroup, size: 60),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    exercise.localizedName(locale),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  if (locale.startsWith('zh') && exercise.nameEn.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        exercise.nameEn,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textHint,
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    children: [
-                      if (isRecent) const _MiniBadge(label: '最近练过'),
-                      if (exercise.isCustom) const _MiniBadge(label: '自定义'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              selected ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: selected ? color : AppColors.textHint,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniBadge extends StatelessWidget {
-  final String label;
-
-  const _MiniBadge({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
+    final weight = item.recommendedWeight == item.recommendedWeight.truncate()
+        ? item.recommendedWeight.toInt().toString()
+        : item.recommendedWeight.toStringAsFixed(1);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: AppColors.primary,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _RecommendationCard extends StatelessWidget {
-  final double weight;
-  final int reps;
-  final String reason;
-  final bool enabled;
-
-  const _RecommendationCard({
-    required this.weight,
-    required this.reps,
-    required this.reason,
-    required this.enabled,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final weightText = weight == weight.truncate()
-        ? weight.toInt().toString()
-        : weight.toStringAsFixed(1);
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: enabled
-            ? AppColors.accent.withValues(alpha: 0.09)
-            : AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: enabled
-              ? AppColors.accent.withValues(alpha: 0.32)
-              : AppColors.textHint.withValues(alpha: 0.12),
+          color: AppColors.forMuscleGroup(item.muscleGroup)
+              .withValues(alpha: 0.18),
         ),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.auto_awesome,
-            color: enabled ? AppColors.accent : AppColors.textHint,
-          ),
+          ExerciseDemoLoop(muscleGroup: item.muscleGroup, size: 70),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  enabled ? '推荐起始组：$weightText kg × $reps' : '选好动作后生成推荐',
+                  item.exercise.localizedName(locale),
                   style: const TextStyle(
-                    fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
-                  reason,
+                  '$weight kg · ${item.targetSets} 组 × ${item.targetReps} 次',
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  item.recommendationReason,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
-                    height: 1.35,
+                    height: 1.25,
                   ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _TinyIconButton(icon: Icons.remove, onTap: onDecreaseSets),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        '${item.targetSets} 组',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    _TinyIconButton(icon: Icons.add, onTap: onIncreaseSets),
+                  ],
                 ),
               ],
             ),
           ),
+          IconButton(
+            onPressed: onRemove,
+            icon: const Icon(Icons.close, size: 18),
+            color: AppColors.textHint,
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _TinyIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _TinyIconButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.08),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 16, color: AppColors.primary),
+      ),
+    );
+  }
+}
+
+class _AddExerciseSheet extends StatelessWidget {
+  final List<Exercise> exercises;
+  final String muscleGroup;
+  final VoidCallback onCreateCustom;
+
+  const _AddExerciseSheet({
+    required this.exercises,
+    required this.muscleGroup,
+    required this.onCreateCustom,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.45,
+      maxChildSize: 0.92,
+      expand: false,
+      builder: (context, controller) {
+        return Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      '添加计划动作',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: onCreateCustom,
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('自定义'),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: controller,
+                itemCount: exercises.length,
+                itemBuilder: (context, index) {
+                  final exercise = exercises[index];
+                  return ListTile(
+                    leading: ExerciseDemoLoop(
+                      muscleGroup: muscleGroup,
+                      size: 54,
+                    ),
+                    title: Text(
+                      exercise.localizedName(locale),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle:
+                        locale.startsWith('zh') && exercise.nameEn.isNotEmpty
+                            ? Text(exercise.nameEn)
+                            : null,
+                    onTap: () => Navigator.pop(context, exercise),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
