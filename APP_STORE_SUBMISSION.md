@@ -3,7 +3,7 @@
 Use the current uploaded build:
 
 - Version: 1.0.0
-- Build: 3
+- Build: 4
 - Bundle ID: com.chris.replog
 - SKU: com.chris.replog
 - App Store Connect Apple ID: 6760642982

@@ -6,6 +6,9 @@ import '../theme/app_colors.dart';
 
 class SetInputPanel extends StatefulWidget {
   final WorkoutSet? lastSet;
+  final double? initialWeight;
+  final int? initialReps;
+  final String? recommendationLabel;
   final bool isKg;
   final VoidCallback onLogSet;
   final void Function(double weight, int reps) onValuesChanged;
@@ -13,6 +16,9 @@ class SetInputPanel extends StatefulWidget {
   const SetInputPanel({
     super.key,
     this.lastSet,
+    this.initialWeight,
+    this.initialReps,
+    this.recommendationLabel,
     this.isKg = true,
     required this.onLogSet,
     required this.onValuesChanged,
@@ -29,20 +35,26 @@ class SetInputPanelState extends State<SetInputPanel> {
   @override
   void initState() {
     super.initState();
-    _weight = widget.lastSet?.weight ?? 20.0;
-    _reps = widget.lastSet?.reps ?? 10;
+    _weight = _seedWeight;
+    _reps = _seedReps;
   }
 
   @override
   void didUpdateWidget(SetInputPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.lastSet != oldWidget.lastSet) {
+    if (widget.lastSet != oldWidget.lastSet ||
+        widget.initialWeight != oldWidget.initialWeight ||
+        widget.initialReps != oldWidget.initialReps) {
       setState(() {
-        _weight = widget.lastSet?.weight ?? 20.0;
-        _reps = widget.lastSet?.reps ?? 10;
+        _weight = _seedWeight;
+        _reps = _seedReps;
       });
     }
   }
+
+  double get _seedWeight =>
+      widget.initialWeight ?? widget.lastSet?.weight ?? 20.0;
+  int get _seedReps => widget.initialReps ?? widget.lastSet?.reps ?? 10;
 
   void _setWeight(double value) {
     if (value < 0) return;
@@ -87,6 +99,28 @@ class SetInputPanelState extends State<SetInputPanel> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (widget.recommendationLabel != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.auto_awesome,
+                      size: 16, color: AppColors.accent),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      widget.recommendationLabel!,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           if (widget.lastSet != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -235,15 +269,27 @@ class _InputStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(label,
-            style: const TextStyle(
+        SizedBox(
+          height: 18,
+          child: Center(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500)),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
         const SizedBox(height: 6),
         Container(
+          height: 52,
           decoration: BoxDecoration(
             color: AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(12),

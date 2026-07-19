@@ -190,17 +190,24 @@ class RestTimerWidgetState extends State<RestTimerWidget>
             ),
           ),
 
-          IconButton(
+          TextButton(
             onPressed: () {
               _timer?.cancel();
               setState(() {
                 _isRunning = false;
                 _isDone = false;
               });
+              HapticFeedback.selectionClick();
               widget.onDismiss?.call();
             },
-            icon: const Icon(Icons.close, size: 18),
-            color: AppColors.textHint,
+            style: TextButton.styleFrom(
+              foregroundColor: _isDone ? AppColors.success : AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+            ),
+            child: Text(
+              _isDone ? '收起' : '提前结束',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),

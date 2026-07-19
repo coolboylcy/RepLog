@@ -7,6 +7,7 @@ import '../app/service_locator.dart';
 import '../models/workout.dart';
 import '../models/workout_set.dart';
 import '../models/exercise.dart';
+import '../models/workout_setup.dart';
 import '../theme/app_colors.dart';
 import '../widgets/muscle_group_chips.dart';
 import '../widgets/exercise_picker.dart';
@@ -16,8 +17,13 @@ import '../widgets/session_set_list.dart';
 
 class SessionPage extends StatefulWidget {
   final Workout workout;
+  final WorkoutSetup? initialSetup;
 
-  const SessionPage({super.key, required this.workout});
+  const SessionPage({
+    super.key,
+    required this.workout,
+    this.initialSetup,
+  });
 
   @override
   State<SessionPage> createState() => _SessionPageState();
@@ -43,9 +49,25 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _workout = widget.workout;
+    final setup = widget.initialSetup;
+    if (setup != null) {
+      _selectedMuscleGroup = setup.muscleGroup;
+      _selectedExercise = setup.exercise;
+    }
     _startElapsedTimer();
     _loadSets();
     _loadWeightUnit();
+    _loadInitialLastSet();
+  }
+
+  Future<void> _loadInitialLastSet() async {
+    final setup = widget.initialSetup;
+    if (setup?.exercise.id == null) return;
+    final workoutSvc = ServiceLocator.of(context).workoutService;
+    final lastSets =
+        await workoutSvc.getLastSetsForExercise(setup!.exercise.id!);
+    if (!mounted) return;
+    setState(() => _lastSet = lastSets.isNotEmpty ? lastSets.first : null);
   }
 
   Future<void> _loadWeightUnit() async {
@@ -328,6 +350,9 @@ class _SessionPageState extends State<SessionPage> with WidgetsBindingObserver {
               SetInputPanel(
                 key: _inputPanelKey,
                 lastSet: _lastSet,
+                initialWeight: widget.initialSetup?.recommendedWeight,
+                initialReps: widget.initialSetup?.recommendedReps,
+                recommendationLabel: widget.initialSetup?.recommendationReason,
                 isKg: _isKg,
                 onLogSet: _logSet,
                 onValuesChanged: (_, __) {},
